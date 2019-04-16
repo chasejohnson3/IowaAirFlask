@@ -32,6 +32,10 @@ def register():
 def addUser():
     return render_template('AddUser.html')
 
+@app.route('/bookflight-single')
+def bookFlightSingle():
+    return render_template('BookFlight-Single.html')
+
 
 @app.route('/viewall')
 def viewall():
