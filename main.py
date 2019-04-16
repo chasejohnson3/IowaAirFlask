@@ -36,6 +36,13 @@ def addUser():
 def bookFlightSingle():
     return render_template('BookFlight-Single.html')
 
+@app.route('/bookflight-roundtrip')
+def bookFlightRound():
+    return render_template('BookFlight-RoundTrip.html')
+
+@app.route('/bookflight-multicity')
+def bookFlightMulti():
+    return render_template('BookFlight-MultiCity.html')
 
 @app.route('/viewall')
 def viewall():
