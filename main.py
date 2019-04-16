@@ -19,8 +19,22 @@ def dbconn():
     return pymysql.connect(host='35.226.87.238', port=3306, user='root', password='kfoPkgr8xKQC', db='iowa_air_gcp')
 
 
+def check_for_logged_on():
+    conn = dbconn()
+    sql = "Select Count(idusers) FROM users WHERE logged_in=1"
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    rows = cursor.fetchall()
+    print(rows[0][0])
+    if rows[0][0] > 0:
+        print("Someone is logged on")
+    else:
+        print("No one is logged on")
+
+
 @app.route('/')
 def home():
+    logged_in = check_for_logged_on()
     return render_template('home.html')
 
 
@@ -28,9 +42,15 @@ def home():
 def register():
     return render_template('register.html')
 
+
 @app.route('/adduser')
 def addUser():
     return render_template('AddUser.html')
+
+
+@app.route('/login')
+def login():
+    return render_template('LogIn.html')
 
 
 @app.route('/viewall')
@@ -71,14 +91,13 @@ def users():
 
 
         conn = dbconn()
-        sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler) " \
-              "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, logged_in) " \
+              "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
         cursor = conn.cursor()
 
         id = get_uuid()
         print("UUID is " + str(id))
-        # cursor.execute(sql, (id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler))
-        cursor.execute(sql, (id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler))
+        cursor.execute(sql, (id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, 1))
 
         conn.commit()
         msg = "Record successfully added"
