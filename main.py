@@ -30,6 +30,16 @@ def check_for_logged_on():
         print("Someone is logged on")
     else:
         print("No one is logged on")
+    conn.close()
+
+
+def log_everyone_off():
+    conn = dbconn()
+    sql = "UPDATE users SET logged_in = 0"
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    conn.commit()
+    conn.close()
 
 
 @app.route('/')
@@ -81,6 +91,7 @@ def viewall():
 # Adds a user's information to the database
 @app.route('/adduser', methods=['POST', 'GET'])
 def users():
+    log_everyone_off()
     if request.method == 'POST':
         # try:
         first_name = request.form['first_name']
@@ -133,7 +144,7 @@ def addrec():
         conn.close()
 
 def get_uuid():
-    id = str(datetime.datetime.now().year)[2:4] + str(datetime.datetime.now().month) + str(datetime.datetime.now().day) + str(
+    id = str(datetime.datetime.now().month) + str(datetime.datetime.now().day) + str(
     datetime.datetime.now().hour) + str(datetime.datetime.now().minute) + str(datetime.datetime.now().second)
     return id
 
