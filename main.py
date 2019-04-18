@@ -9,10 +9,10 @@ import uuid
 
 from werkzeug.utils import secure_filename
 import datetime
+
 app = Flask(__name__)
 
 import base64
-
 
 
 def dbconn():
@@ -42,6 +42,33 @@ def log_everyone_off():
     conn.close()
 
 
+def count_users_by_name(first_name):
+    conn = dbconn()
+    sql = "SELECT COUNT(idusers) FROM users WHERE first_name = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, first_name)
+    rows = cursor.fetchall()
+    return rows[0][0]
+
+
+def add_user(first_name, last_name=None, middle_name=None, suffix=None, preferred_name=None, date_of_birth=None, gender=None, country=None, state=None,
+             city=None, address=None, postal_code=None, email=None, phone_number=None, password=None, secure_traveler=None):
+    conn = dbconn()
+    sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, " \
+          "gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, " \
+          "logged_in) " \
+          "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    cursor = conn.cursor()
+
+    id = get_uuid()
+    print("UUID is " + str(id))
+    cursor.execute(sql, (
+        id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city,
+        address, postal_code, email, phone_number, password, secure_traveler, 1))  # the 1 at the end logs the user in
+
+    conn.commit()
+
+
 @app.route('/')
 def home():
     logged_in = check_for_logged_on()
@@ -57,17 +84,21 @@ def register():
 def addUser():
     return render_template('AddUser.html')
 
+
 @app.route('/bookflight-single')
 def bookFlightSingle():
     return render_template('BookFlight-Single.html')
+
 
 @app.route('/bookflight-roundtrip')
 def bookFlightRound():
     return render_template('BookFlight-RoundTrip.html')
 
+
 @app.route('/bookflight-multicity')
 def bookFlightMulti():
     return render_template('BookFlight-MultiCity.html')
+
 
 @app.route('/login')
 def login():
@@ -81,12 +112,13 @@ def viewall():
     cursor = conn.cursor()
     cursor.execute(sql)
     rows = cursor.fetchall()
-    data=[]
+    data = []
     for row in rows:
         temp = [row[1], row[2]]
         data.append(list(temp))
     conn.close()
     return render_template("list.html", rows=data)
+
 
 # Adds a user's information to the database
 @app.route('/adduser', methods=['POST', 'GET'])
@@ -111,42 +143,28 @@ def users():
         password = request.form['password']
         secure_traveler = request.form['secure_traveler']
 
-
-        conn = dbconn()
-        sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, logged_in) " \
-              "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        cursor = conn.cursor()
-
-        id = get_uuid()
-        print("UUID is " + str(id))
-        cursor.execute(sql, (id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, 1))
-
-        conn.commit()
+        # conn = dbconn()
+        # sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, logged_in) " \
+        #       "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        # cursor = conn.cursor()
+        #
+        # id = get_uuid()
+        # print("UUID is " + str(id))
+        # cursor.execute(sql, (
+        # id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city,
+        # address, postal_code, email, phone_number, password, secure_traveler, 1))
+        #
+        # conn.commit()
         msg = "Record successfully added"
         return render_template("users.html", result=request.form, msg=msg)
         conn.close()
 
 
-# addrec does not do anything useful yet
-@app.route('/addrec', methods=['POST', 'GET'])
-def addrec():
-    if request.method == 'POST':
-        # try:
-        nm = request.form['FlightName']
-
-        conn = dbconn()
-
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO users(idusers, first_name) VALUES(4,'test')")
-        conn.commit()
-        msg = "Record successfully added"
-        return render_template("addrec.html", result=request.form, msg=msg)
-        conn.close()
-
 def get_uuid():
     id = str(datetime.datetime.now().month) + str(datetime.datetime.now().day) + str(
-    datetime.datetime.now().hour) + str(datetime.datetime.now().minute) + str(datetime.datetime.now().second)
+        datetime.datetime.now().hour) + str(datetime.datetime.now().minute) + str(datetime.datetime.now().second)
     return id
+
 
 if __name__ == '__main__':
     app.run(debug=True)
