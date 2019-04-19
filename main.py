@@ -1,18 +1,12 @@
-import base64
-from base64 import b64encode, b64decode
-import os
-
 import pymysql
-from flask import render_template, request, redirect, flash, send_from_directory
+from flask import render_template, request, session, redirect, flash, send_from_directory, url_for
 from flask import Flask
 import uuid
 
-from werkzeug.utils import secure_filename
 import datetime
 
 app = Flask(__name__)
-
-import base64
+app.secret_key = str(uuid.uuid4())
 
 
 def dbconn():
@@ -65,15 +59,32 @@ def add_user(first_name, last_name=None, middle_name=None, suffix=None, preferre
     cursor.execute(sql, (
         id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city,
         address, postal_code, email, phone_number, password, secure_traveler, 1))  # the 1 at the end logs the user in
-
+    current_user_id = id
+    session['username'] = str(id)
     conn.commit()
 
 
 @app.route('/')
 def home():
-    logged_in = check_for_logged_on()
+    # logged_in = check_for_logged_on()
+    # if 'username' in session and session['username'] is not None:
+        # return 'Logged in as ' + username + '<br>' + \
+        #        "<b><a href = '/logout'>click here to log out</a></b>"
+        # usr = "test"
     return render_template('home.html')
+        # return redirect(url_for('home'))
 
+    # return "You are not logged in <br><a href = '/login'></b>" + \
+    #            "click here to log in</b></a>"
+    # print("current user: " + str(current_user_id))
+    # return render_template('home.html', user_id=session['username'])
+
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    # return render_template('home.html')
+    return redirect(url_for('home'))
 
 @app.route('/register')
 def register():
@@ -120,10 +131,19 @@ def viewall():
     return render_template("list.html", rows=data)
 
 
+@app.route('/login', methods=['POST', 'GET'])
+def login_action():
+    email = request.form['email']
+    password = request.form['password']
+    session['username'] = email
+    session['password'] = password
+    return render_template("home.html", email=session['username'])
+
+
 # Adds a user's information to the database
 @app.route('/adduser', methods=['POST', 'GET'])
 def users():
-    log_everyone_off()
+    #log_everyone_off()
     if request.method == 'POST':
         # try:
         first_name = request.form['first_name']
