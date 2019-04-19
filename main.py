@@ -66,18 +66,7 @@ def add_user(first_name, last_name=None, middle_name=None, suffix=None, preferre
 
 @app.route('/')
 def home():
-    # logged_in = check_for_logged_on()
-    # if 'username' in session and session['username'] is not None:
-        # return 'Logged in as ' + username + '<br>' + \
-        #        "<b><a href = '/logout'>click here to log out</a></b>"
-        # usr = "test"
     return render_template('home.html')
-        # return redirect(url_for('home'))
-
-    # return "You are not logged in <br><a href = '/login'></b>" + \
-    #            "click here to log in</b></a>"
-    # print("current user: " + str(current_user_id))
-    # return render_template('home.html', user_id=session['username'])
 
 
 @app.route('/logout')
@@ -163,18 +152,8 @@ def users():
         password = request.form['password']
         secure_traveler = request.form['secure_traveler']
 
-        # conn = dbconn()
-        # sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, logged_in) " \
-        #       "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        # cursor = conn.cursor()
-        #
-        # id = get_uuid()
-        # print("UUID is " + str(id))
-        # cursor.execute(sql, (
-        # id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city,
-        # address, postal_code, email, phone_number, password, secure_traveler, 1))
-        #
-        # conn.commit()
+        add_user(first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state,
+                 city, address, postal_code, email, phone_number, password, secure_traveler)
         msg = "Record successfully added"
         return render_template("users.html", result=request.form, msg=msg)
         conn.close()
