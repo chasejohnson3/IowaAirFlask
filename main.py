@@ -158,6 +158,10 @@ def addUser():
 def bookFlightSingle():
     return render_template('BookFlight-Single.html')
 
+@app.route('/flight-notification')
+def flight_notification():
+    return render_template('flight-notification.html')
+
 @app.route('/bookflight-roundtrip')
 def bookFlightRound():
     return render_template('BookFlight-RoundTrip.html')
@@ -248,6 +252,39 @@ def viewall():
     conn = dbconn()
     sql = "SELECT * FROM flights"
     cursor = conn.cursor()
+    cursor.execute(sql)
+    rows = cursor.fetchall()
+    data=[]
+    for row in rows:
+        temp = [row[1], row[2]]
+        data.append(list(temp))
+    conn.close()
+    return render_template("list.html", rows=data)
+
+@app.route('/flight-link', methods=['POST', 'GET'])
+def flightlink():
+    if request.method == 'POST':
+        id = request.form['id']
+        from_ = request.form['from']
+        to = request.form['to']
+    conn = dbconn()
+    cursor = conn.cursor()
+    sql = "SELECT * FROM flights WHERE idflights` = %s AND Departing_City` = %s AND `Arriving_City` = %s ;"
+    try:
+        cursor.execute(sql, (id, from_, to))
+        rows = cursor.fetchall()
+        data = []
+        for row in rows:
+            temp = [row[0], row[1], row[2], row[3], row[4], row[5]]
+            data.append(list(temp))
+        cursor.close()
+        conn.close()
+        return render_template("flight-link.html", rows=data)
+
+    except:
+        return render_template('Empty.html')
+
+    sql = "SELECT * FROM flights WHERE ID=id"
     cursor.execute(sql)
     rows = cursor.fetchall()
     data=[]
