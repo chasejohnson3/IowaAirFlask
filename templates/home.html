@@ -5,11 +5,16 @@
     <title>Airline</title>
 </head>
 <body>
-<p>Welcome</p>
 
+<p>Welcome {{first_name}}</p>
 <a href="/adduser">Register</a>
 <br>
+
+{% if null == email %}
 <a href="/login">Log in</a>
+{% else %}
+<a href="/logout">Log out</a>
+{%endif%}
 
 <br>
 <br>

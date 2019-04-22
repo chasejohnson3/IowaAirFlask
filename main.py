@@ -1,18 +1,12 @@
-import base64
-from base64 import b64encode, b64decode
-import os
-
 import pymysql
-from flask import render_template, request, redirect, flash, send_from_directory
+from flask import render_template, request, session, redirect, flash, send_from_directory, url_for
 from flask import Flask
 import uuid
 
-from werkzeug.utils import secure_filename
 import datetime
 
 app = Flask(__name__)
-
-import base64
+app.secret_key = str(uuid.uuid4())
 
 
 def dbconn():
@@ -33,6 +27,25 @@ def check_for_logged_on():
     conn.close()
 
 
+def delete_user_by_id(id):
+    conn = dbconn()
+    sql = "DELETE FROM users WHERE idusers = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, id)
+    conn.commit()
+    conn.close()
+
+
+
+def get_first_name_by_id(id):
+    conn = dbconn()
+    sql = "SELECT first_name FROM users WHERE idusers = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, id)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows[0][0]
+
 def log_everyone_off():
     conn = dbconn()
     sql = "UPDATE users SET logged_in = 0"
@@ -42,38 +55,92 @@ def log_everyone_off():
     conn.close()
 
 
+def get_idusers_by_email(email):
+    conn = dbconn()
+    sql = "SELECT idusers FROM users WHERE email = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, email)
+    rows = cursor.fetchall()
+    conn.close()
+    if cursor.rowcount > 0:
+        return str(rows[0][0])
+    else:
+        return None
+
+
 def count_users_by_name(first_name):
     conn = dbconn()
     sql = "SELECT COUNT(idusers) FROM users WHERE first_name = %s"
     cursor = conn.cursor()
     cursor.execute(sql, first_name)
     rows = cursor.fetchall()
+    conn.close()
     return rows[0][0]
 
 
-def add_user(first_name, last_name=None, middle_name=None, suffix=None, preferred_name=None, date_of_birth=None, gender=None, country=None, state=None,
-             city=None, address=None, postal_code=None, email=None, phone_number=None, password=None, secure_traveler=None):
+def check_if_id_exists(id):
     conn = dbconn()
-    sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, " \
-          "gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, " \
-          "logged_in) " \
-          "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    sql = "SELECT idusers FROM users WHERE idusers = %s"
     cursor = conn.cursor()
+    cursor.execute(sql, id)
+    conn.close()
+    if cursor.rowcount > 0:
+        return True
+    else:
+        return False
 
-    id = get_uuid()
-    print("UUID is " + str(id))
-    cursor.execute(sql, (
-        id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city,
-        address, postal_code, email, phone_number, password, secure_traveler, 1))  # the 1 at the end logs the user in
 
-    conn.commit()
+def add_user(email, first_name=None, last_name=None, middle_name=None, suffix=None, preferred_name=None, date_of_birth=None, gender=None, country=None, state=None,
+             city=None, address=None, postal_code=None, phone_number=None, password=None, secure_traveler=None):
+
+    # If a user with the given email already exists, do not allow a new email with this email to be created
+    if get_idusers_by_email(email) is not None:
+        return None
+    else:
+        conn = dbconn()
+        sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, " \
+              "gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, " \
+              "logged_in) " \
+              "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor = conn.cursor()
+
+        id = get_uuid()
+        print("UUID is " + str(id))
+        cursor.execute(sql, (
+            id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city,
+            address, postal_code, email, phone_number, password, secure_traveler, 1))  # the 1 at the end logs the user in
+        current_user_id = id
+        # session['username'] = str(id)
+        conn.commit()
+        conn.close()
+        return current_user_id
+
+
+def check_password_by_email(email, password):
+    conn = dbconn()
+    cursor = conn.cursor()
+    sql = "SELECT idusers FROM users WHERE email=%s AND password=%s"
+    cursor.execute(sql, (email, password))
+    rows = cursor.fetchall()
+    print(rows)
+    if cursor.rowcount > 0:
+        return True
+    return False
 
 
 @app.route('/')
 def home():
-    logged_in = check_for_logged_on()
-    return render_template('home.html')
+    if 'idusers' in session:
+        return render_template("home.html", first_name=get_first_name_by_id(session['idusers']))
+    else:
+        return render_template("home.html")
 
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    # return render_template('home.html')
+    return redirect(url_for('home'))
 
 @app.route('/register')
 def register():
@@ -120,10 +187,22 @@ def viewall():
     return render_template("list.html", rows=data)
 
 
+@app.route('/login', methods=['POST', 'GET'])
+def login_action():
+    email = request.form['email']
+    password = request.form['password']
+    if check_password_by_email(email, password):
+        session['idusers'] = get_idusers_by_email(email)
+    else:
+        return render_template("LogIn.html", error="Incorrect Username/Password")
+
+    return render_template("home.html", first_name=get_first_name_by_id(session['idusers']))
+
+
 # Adds a user's information to the database
 @app.route('/adduser', methods=['POST', 'GET'])
 def users():
-    log_everyone_off()
+    #log_everyone_off()
     if request.method == 'POST':
         # try:
         first_name = request.form['first_name']
@@ -143,21 +222,16 @@ def users():
         password = request.form['password']
         secure_traveler = request.form['secure_traveler']
 
-        # conn = dbconn()
-        # sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, logged_in) " \
-        #       "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        # cursor = conn.cursor()
-        #
-        # id = get_uuid()
-        # print("UUID is " + str(id))
-        # cursor.execute(sql, (
-        # id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city,
-        # address, postal_code, email, phone_number, password, secure_traveler, 1))
-        #
-        # conn.commit()
-        msg = "Record successfully added"
-        return render_template("users.html", result=request.form, msg=msg)
+        user_id = add_user(email, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state,
+                 city, address, postal_code, phone_number, password, secure_traveler)
+        if user_id is not None:
+            session['idusers'] = user_id
+            msg = "Record successfully added"
+            return render_template("users.html", result=request.form, msg=msg)
+        else:
+            return render_template("AddUser.html", error="A user with this email already exists")
         conn.close()
+
 
 
 def get_uuid():
