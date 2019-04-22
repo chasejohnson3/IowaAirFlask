@@ -4,17 +4,17 @@
 <form action="http://localhost:5000/bookflight-single" method="POST" enctype="multipart/form-data" >
         <div style="width: 1200px; margin-left: auto; margin-right: auto;">
             <div>
-            <p class="data">From</p>
-            <input class="data" from="from_city"/>
+            <p class="data">From    (Example: New York City)</p>
+            <input class="data" name="from_city"/>
             </div>
 
             <div>
-            <p class="data">To:</p>
+            <p class="data">To:    (Example: Chicago)</p>
             <input class="data" name="to_city"/>
             </div>
 
             <div>
-            <p class="data">Departure Date:</p>
+            <p class="data">Departure Date:    (Example: 2019-06-19 00:00:00)</p>
             <input class="data" name="departure_date"/>
             </div>
 
@@ -25,8 +25,7 @@
             </div>
 
         </div>
-        <!--</form>-->
-    <p><input type="submit" value="Search"/></p>
+    <p><input type="submit" value="submit"/></p>
 </form>
 
 </body>
