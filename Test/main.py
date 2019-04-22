@@ -45,6 +45,10 @@ def result():
 		result = request.form
 		return render_template("addrec.html", result=result)
 
+@app.route('/flightnoti')
+def flightnoti():
+	return render_template('flight-notification.html')
+
 
 @app.route('/viewall')
 def viewall():
@@ -113,6 +117,7 @@ def addrec():
 		finally:
 			return render_template("addrec.html", result=request.form, msg=msg)
 			conn.close()
+
 
 
 if __name__ == '__main__':
