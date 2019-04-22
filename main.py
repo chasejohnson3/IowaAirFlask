@@ -131,15 +131,17 @@ def check_password_by_email(email, password):
 
 @app.route('/')
 def home():
+    first_name = ""
+    idusers = None
     if 'idusers' in session:
-        return render_template("home.html", first_name=get_first_name_by_id(session['idusers']))
-    else:
-        return render_template("home.html")
+        first_name = get_first_name_by_id(session['idusers'])
+        idusers = session['idusers']
+    return render_template("home.html", first_name=first_name, idusers=idusers)
 
 
 @app.route('/logout')
 def logout():
-    session.pop('username', None)
+    session.pop('idusers', None)
     # return render_template('home.html')
     return redirect(url_for('home'))
 
