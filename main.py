@@ -27,7 +27,6 @@ def check_for_logged_on():
     conn.close()
 
 
-# TODO: test this
 def delete_user_by_id(id):
     conn = dbconn()
     sql = "DELETE FROM users WHERE idusers = %s"
@@ -38,7 +37,6 @@ def delete_user_by_id(id):
 
 
 
-# TODO: Test this
 def get_first_name_by_id(id):
     conn = dbconn()
     sql = "SELECT first_name FROM users WHERE idusers = %s"
@@ -80,28 +78,42 @@ def count_users_by_name(first_name):
     return rows[0][0]
 
 
+def check_if_id_exists(id):
+    conn = dbconn()
+    sql = "SELECT idusers FROM users WHERE idusers = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, id)
+    conn.close()
+    if cursor.rowcount > 0:
+        return True
+    else:
+        return False
+
+
 def add_user(email, first_name=None, last_name=None, middle_name=None, suffix=None, preferred_name=None, date_of_birth=None, gender=None, country=None, state=None,
              city=None, address=None, postal_code=None, phone_number=None, password=None, secure_traveler=None):
-    conn = dbconn()
-    sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, " \
-          "gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, " \
-          "logged_in) " \
-          "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-    cursor = conn.cursor()
 
-    id = get_uuid()
-    print("UUID is " + str(id))
-    cursor.execute(sql, (
-        id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city,
-        address, postal_code, email, phone_number, password, secure_traveler, 1))  # the 1 at the end logs the user in
-    current_user_id = id
-    # session['username'] = str(id)
-    conn.commit()
-    conn.close()
-    return current_user_id
+    # If a user with the given email already exists, do not allow a new email with this email to be created
+    if get_idusers_by_email(email) is not None:
+        return None
+    else:
+        conn = dbconn()
+        sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, " \
+              "gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, " \
+              "logged_in) " \
+              "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor = conn.cursor()
 
-
-# TODO: When creating user, make sure the username isn't already in the database
+        id = get_uuid()
+        print("UUID is " + str(id))
+        cursor.execute(sql, (
+            id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city,
+            address, postal_code, email, phone_number, password, secure_traveler, 1))  # the 1 at the end logs the user in
+        current_user_id = id
+        # session['username'] = str(id)
+        conn.commit()
+        conn.close()
+        return current_user_id
 
 
 def check_password_by_email(email, password):
@@ -183,7 +195,6 @@ def login_action():
         session['idusers'] = get_idusers_by_email(email)
     else:
         return render_template("LogIn.html", error="Incorrect Username/Password")
-    # TODO: Make sure the user is in the database
 
     return render_template("home.html", first_name=get_first_name_by_id(session['idusers']))
 
@@ -211,12 +222,16 @@ def users():
         password = request.form['password']
         secure_traveler = request.form['secure_traveler']
 
-        user_id = add_user(first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state,
-                 city, address, postal_code, email, phone_number, password, secure_traveler)
-        session['idusers'] = user_id
-        msg = "Record successfully added"
-        return render_template("users.html", result=request.form, msg=msg)
+        user_id = add_user(email, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state,
+                 city, address, postal_code, phone_number, password, secure_traveler)
+        if user_id is not None:
+            session['idusers'] = user_id
+            msg = "Record successfully added"
+            return render_template("users.html", result=request.form, msg=msg)
+        else:
+            return render_template("AddUser.html", error="A user with this email already exists")
         conn.close()
+
 
 
 def get_uuid():
