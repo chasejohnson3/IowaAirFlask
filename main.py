@@ -156,6 +156,10 @@ def addUser():
 def bookFlightSingle():
     return render_template('BookFlight-Single.html')
 
+@app.route('/flight-notification')
+def flight_notification():
+    return render_template('flight-notification.html')
+
 @app.route('/bookflight-roundtrip')
 def bookFlightRound():
     return render_template('BookFlight-RoundTrip.html')
@@ -183,8 +187,8 @@ def viewall():
     conn.close()
     return render_template("list.html", rows=data)
 
-@app.route('/flightslink', methods=['POST', 'GET'])
-def flightlink(id):
+@app.route('/flight-link', methods=['POST', 'GET'])
+def flightlink():
     if request.method == 'POST':
         id = request.form['id']
         from_ = request.form['from']
