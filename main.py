@@ -27,12 +27,18 @@ def check_for_logged_on():
     conn.close()
 
 
-# TODO: Add delete_by_id method for testing
+# TODO: test this
+def delete_user_by_id(id):
+    conn = dbconn()
+    sql = "DELETE FROM users WHERE idusers = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, id)
+    conn.commit()
+    conn.close()
 
 
 
-
-
+# TODO: Test this
 def get_first_name_by_id(id):
     conn = dbconn()
     sql = "SELECT first_name FROM users WHERE idusers = %s"
@@ -51,14 +57,17 @@ def log_everyone_off():
     conn.close()
 
 
-def get_idusers_by_username(email):
+def get_idusers_by_email(email):
     conn = dbconn()
     sql = "SELECT idusers FROM users WHERE email = %s"
     cursor = conn.cursor()
     cursor.execute(sql, email)
     rows = cursor.fetchall()
     conn.close()
-    return rows[0][0]
+    if cursor.rowcount > 0:
+        return str(rows[0][0])
+    else:
+        return None
 
 
 def count_users_by_name(first_name):
@@ -71,8 +80,8 @@ def count_users_by_name(first_name):
     return rows[0][0]
 
 
-def add_user(first_name, last_name=None, middle_name=None, suffix=None, preferred_name=None, date_of_birth=None, gender=None, country=None, state=None,
-             city=None, address=None, postal_code=None, email=None, phone_number=None, password=None, secure_traveler=None):
+def add_user(email, first_name=None, last_name=None, middle_name=None, suffix=None, preferred_name=None, date_of_birth=None, gender=None, country=None, state=None,
+             city=None, address=None, postal_code=None, phone_number=None, password=None, secure_traveler=None):
     conn = dbconn()
     sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, " \
           "gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, " \
@@ -171,7 +180,7 @@ def login_action():
     email = request.form['email']
     password = request.form['password']
     if check_password_by_email(email, password):
-        session['idusers'] = get_idusers_by_username(email)
+        session['idusers'] = get_idusers_by_email(email)
     else:
         return render_template("LogIn.html", error="Incorrect Username/Password")
     # TODO: Make sure the user is in the database
