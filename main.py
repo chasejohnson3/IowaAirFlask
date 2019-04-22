@@ -63,6 +63,78 @@ def bookFlightMulti():
 def login():
     return render_template('LogIn.html')
 
+@app.route('/bookflight-single', methods=['POST', 'GET'])
+def singlesearch():
+    if request.method == 'POST':
+        from_city = request.form['from_city']
+        to_city = request.form['to_city']
+        departure_date = request.form['departure_date']
+
+    conn = dbconn()
+    sql = "SELECT * FROM flights WHERE `Departing_City` = %s AND `Arriving_City` = %s AND `Departure_Datetime` = %s;"
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql, (from_city, to_city, departure_date))
+        rows = cursor.fetchall()
+        data = []
+        for row in rows:
+            temp = [row[0], row[1], row[2], row[3], row[4], row[5]]
+            data.append(list(temp))
+        cursor.close()
+        conn.close()
+        return render_template("FlightsResult.html", rows=data)
+
+    except:
+        return render_template('Empty.html')
+
+
+@app.route('/empty')
+def empty():
+    return render_template('Empty.html')
+
+
+@app.route('/single-result')
+def fligtresult():
+    return render_template('FlightsResult.html')
+
+
+@app.route('/round-result')
+def fligtresult2():
+    return render_template('FlightsResult.html')
+
+
+@app.route('/bookflight-roundtrip', methods=['POST', 'GET'])
+def roundsearch():
+    if request.method == 'POST':
+        from_city = request.form['from_city']
+        to_city = request.form['to_city']
+        departure_date = request.form['departure_date']
+        return_date = request.form['return_date']
+
+    sql1 = "SELECT * FROM flights WHERE `Departing_City` = %s AND `Arriving_City` = %s AND `Departure_Datetime` = %s;"
+    sql2 = "SELECT * FROM flights WHERE `Departing_City` = %s AND `Arriving_City` = %s AND `Departure_Datetime` = %s;"
+    conn = dbconn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(sql1, (from_city, to_city, departure_date))
+        rows1 = cursor.fetchall()
+        data = []
+        for row in rows1:
+            temp = [row[0], row[1], row[2], row[3], row[4], row[5]]
+            data.append(list(temp))
+
+        cursor.execute(sql2, (to_city, from_city, return_date))
+        rows2 = cursor.fetchall()
+        for row in rows2:
+            temp = [row[0], row[1], row[2], row[3], row[4], row[5]]
+            data.append(list(temp))
+        cursor.close()
+        conn.close()
+        return render_template("FlightsResult.html", rows=data)
+
+    except:
+        return render_template('Empty.html')
 
 @app.route('/viewall')
 def viewall():
@@ -136,6 +208,13 @@ def get_uuid():
     id = str(datetime.datetime.now().year)[2:4] + str(datetime.datetime.now().month) + str(datetime.datetime.now().day) + str(
     datetime.datetime.now().hour) + str(datetime.datetime.now().minute) + str(datetime.datetime.now().second)
     return id
+
+class searchError(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
 
 if __name__ == '__main__':
     app.run(debug=True)
