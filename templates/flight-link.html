@@ -4,44 +4,29 @@
 <form>
     <table border=1>
         <thead>
-        <td>Flight</td>
-        <td>Depart</td>
-        <td>Arrive</td>
+        <td>Flight Number</td>
+        <td>Departure Number</td>
+        <td>Arriving City</td>
         <td>Status</td>
         </thead>
-        Flight Status
+        {% for row in rows %}
         <tr>
             <td>{{row[0]}}</td>
             <td>{{row[1]}}</td>
             <td>{{row[2]}}</td>
             <td><a href="/viewall">Status</a></td>
 
-            <!--<td>{{row["marks"]}}</td>-->
         </tr>
 
-        <tr>
-            <td>{{row[0]}}</td>
-            <td>{{row[1]}}</td>
-            <td>{{row[2]}}</td>
-            <td><a href="/viewall">Status</a></td>
-
-            <!--<td>{{row["marks"]}}</td>-->
-        </tr>
-
-        <tr>
-            <td>{{row[0]}}</td>
-            <td>{{row[1]}}</td>
-            <td>{{row[2]}}</td>
-            <td><a href="/viewall">Status</a></td>
-
-            <!--<td>{{row["marks"]}}</td>-->
-        </tr>
-
-
+        {% endfor %}
     </table>
-
-
 
     <a href="/viewall">Return</a>
 
 </form>
+
+<br>
+<a href="/">Go back to home page</a>
+
+</body>
+</html>
