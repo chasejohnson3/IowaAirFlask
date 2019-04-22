@@ -27,6 +27,21 @@ def check_for_logged_on():
     conn.close()
 
 
+# TODO: Add delete_by_id method for testing
+
+
+
+
+
+def get_first_name_by_id(id):
+    conn = dbconn()
+    sql = "SELECT first_name FROM users WHERE idusers = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, id)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows[0][0]
+
 def log_everyone_off():
     conn = dbconn()
     sql = "UPDATE users SET logged_in = 0"
@@ -36,12 +51,23 @@ def log_everyone_off():
     conn.close()
 
 
+def get_idusers_by_username(email):
+    conn = dbconn()
+    sql = "SELECT idusers FROM users WHERE email = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, email)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows[0][0]
+
+
 def count_users_by_name(first_name):
     conn = dbconn()
     sql = "SELECT COUNT(idusers) FROM users WHERE first_name = %s"
     cursor = conn.cursor()
     cursor.execute(sql, first_name)
     rows = cursor.fetchall()
+    conn.close()
     return rows[0][0]
 
 
@@ -60,13 +86,33 @@ def add_user(first_name, last_name=None, middle_name=None, suffix=None, preferre
         id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city,
         address, postal_code, email, phone_number, password, secure_traveler, 1))  # the 1 at the end logs the user in
     current_user_id = id
-    session['username'] = str(id)
+    # session['username'] = str(id)
     conn.commit()
+    conn.close()
+    return current_user_id
+
+
+# TODO: When creating user, make sure the username isn't already in the database
+
+
+def check_password_by_email(email, password):
+    conn = dbconn()
+    cursor = conn.cursor()
+    sql = "SELECT idusers FROM users WHERE email=%s AND password=%s"
+    cursor.execute(sql, (email, password))
+    rows = cursor.fetchall()
+    print(rows)
+    if cursor.rowcount > 0:
+        return True
+    return False
 
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    if 'idusers' in session:
+        return render_template("home.html", first_name=get_first_name_by_id(session['idusers']))
+    else:
+        return render_template("home.html")
 
 
 @app.route('/logout')
@@ -124,9 +170,13 @@ def viewall():
 def login_action():
     email = request.form['email']
     password = request.form['password']
-    session['username'] = email
-    session['password'] = password
-    return render_template("home.html", email=session['username'])
+    if check_password_by_email(email, password):
+        session['idusers'] = get_idusers_by_username(email)
+    else:
+        return render_template("LogIn.html", error="Incorrect Username/Password")
+    # TODO: Make sure the user is in the database
+
+    return render_template("home.html", first_name=get_first_name_by_id(session['idusers']))
 
 
 # Adds a user's information to the database
@@ -152,8 +202,9 @@ def users():
         password = request.form['password']
         secure_traveler = request.form['secure_traveler']
 
-        add_user(first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state,
+        user_id = add_user(first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state,
                  city, address, postal_code, email, phone_number, password, secure_traveler)
+        session['idusers'] = user_id
         msg = "Record successfully added"
         return render_template("users.html", result=request.form, msg=msg)
         conn.close()
