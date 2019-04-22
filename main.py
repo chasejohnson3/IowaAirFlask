@@ -4,9 +4,9 @@ from flask import Flask
 import uuid
 
 import datetime
-
 app = Flask(__name__)
 app.secret_key = str(uuid.uuid4())
+
 
 
 def dbconn():
@@ -24,6 +24,7 @@ def check_for_logged_on():
         print("Someone is logged on")
     else:
         print("No one is logged on")
+
     conn.close()
 
 
@@ -151,21 +152,17 @@ def register():
 def addUser():
     return render_template('AddUser.html')
 
-
 @app.route('/bookflight-single')
 def bookFlightSingle():
     return render_template('BookFlight-Single.html')
-
 
 @app.route('/bookflight-roundtrip')
 def bookFlightRound():
     return render_template('BookFlight-RoundTrip.html')
 
-
 @app.route('/bookflight-multicity')
 def bookFlightMulti():
     return render_template('BookFlight-MultiCity.html')
-
 
 @app.route('/login')
 def login():
@@ -179,14 +176,14 @@ def viewall():
     cursor = conn.cursor()
     cursor.execute(sql)
     rows = cursor.fetchall()
-    data = []
+    data=[]
     for row in rows:
         temp = [row[1], row[2]]
         data.append(list(temp))
     conn.close()
     return render_template("list.html", rows=data)
 
-
+  
 @app.route('/login', methods=['POST', 'GET'])
 def login_action():
     email = request.form['email']
@@ -235,10 +232,9 @@ def users():
 
 
 def get_uuid():
-    id = str(datetime.datetime.now().month) + str(datetime.datetime.now().day) + str(
-        datetime.datetime.now().hour) + str(datetime.datetime.now().minute) + str(datetime.datetime.now().second)
+    id = str(datetime.datetime.now().year)[2:4] + str(datetime.datetime.now().month) + str(datetime.datetime.now().day) + str(
+    datetime.datetime.now().hour) + str(datetime.datetime.now().minute) + str(datetime.datetime.now().second)
     return id
-
 
 if __name__ == '__main__':
     app.run(debug=True)
