@@ -344,7 +344,7 @@ def users():
 
 
 def get_uuid():
-    id = str(datetime.datetime.now().year)[2:4] + str(datetime.datetime.now().month) + str(datetime.datetime.now().day) + str(
+    id = str(datetime.datetime.now().month) + str(datetime.datetime.now().day) + str(
     datetime.datetime.now().hour) + str(datetime.datetime.now().minute) + str(datetime.datetime.now().second)
     return id
 
