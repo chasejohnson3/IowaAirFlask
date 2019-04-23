@@ -100,16 +100,13 @@ def add_user(email, first_name=None, last_name=None, middle_name=None, suffix=No
     else:
         conn = dbconn()
         sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, " \
-              "gender, country, state, city, address, postal_code, email, phone_number, password, secure_traveler, " \
-              "logged_in) " \
-              "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+              "gender, country, state, city, address, postal_code, email, phone_number, password) " \
+              "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
         cursor = conn.cursor()
 
         id = get_uuid()
         print("UUID is " + str(id))
-        cursor.execute(sql, (
-            id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city,
-            address, postal_code, email, phone_number, password, secure_traveler, 1))  # the 1 at the end logs the user in
+        cursor.execute(sql, (id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city, address, postal_code, email, phone_number, password))  # the 1 at the end logs the user in
         current_user_id = id
         # session['username'] = str(id)
         conn.commit()
@@ -270,7 +267,7 @@ def flightlink():
         to = request.form['to']
     conn = dbconn()
     cursor = conn.cursor()
-    sql = "SELECT * FROM flights WHERE idflights` = %s AND Departing_City` = %s AND `Arriving_City` = %s ;"
+    sql = "SELECT * FROM flights WHERE idflights = %s AND Departing_City = %s AND Arriving_City = %s ;"
     try:
         cursor.execute(sql, (id, from_, to))
         rows = cursor.fetchall()
@@ -332,7 +329,7 @@ def users():
         secure_traveler = request.form['secure_traveler']
 
         user_id = add_user(email, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state,
-                 city, address, postal_code, phone_number, password, secure_traveler)
+                 city, address, postal_code, phone_number, password)
         if user_id is not None:
             session['idusers'] = user_id
             msg = "Record successfully added"
