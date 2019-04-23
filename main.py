@@ -138,7 +138,7 @@ def add_user(email, first_name=None, last_name=None, middle_name=None, suffix=No
 
 
 
-def add_flight(Departing_City=None, Arriving_City=None, Distance=0, Departure_Datetime=None, Arrival_Datetime=None, Classes=None,Gate=None,  Aircraft=None):
+def add_flight(Departing_City=None, Arriving_City=None, Distance=0, Departure_Datetime=None, Arrival_Datetime=None, Gate=None,  Aircraft=None):
 
     # If a user with the given email already exists, do not allow a new email with this email to be created
     id = get_uuid()
@@ -146,12 +146,12 @@ def add_flight(Departing_City=None, Arriving_City=None, Distance=0, Departure_Da
         return None
     else:
         conn = dbconn()
-        sql = "INSERT INTO flights(idflights, Departing_City, Arriving_City, Distance, Departure_Datetime, Arrival_Datetime, Classes, " \
+        sql = "INSERT INTO flights(idflights, Departing_City, Arriving_City, Distance, Departure_Datetime, Arrival_Datetime," \
               "Gate,  Aircraft) " \
-              "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+              "VALUES(%s, %s, %s, %s, %s, %s, %s, %s)"
         cursor = conn.cursor()
         cursor.execute(sql, (
-            id, Departing_City, Arriving_City, Distance, Departure_Datetime, Arrival_Datetime, Classes,Gate, Aircraft))
+            id, Departing_City, Arriving_City, Distance, Departure_Datetime, Arrival_Datetime, Gate, Aircraft))
         # session['username'] = str(id)
         conn.commit()
         conn.close()
@@ -400,11 +400,10 @@ def Flights():
         distance = request.form['distance']
         de_date = request.form['de_date']
         ar_date = request.form['ar_date']
-        classes = request.form['classes']
         gate = request.form['gate']
         aircraft = request.form['aircraft']
 
-        flightid = add_flight(de_city, ar_city, distance, de_date, ar_date, classes, gate, aircraft)
+        flightid = add_flight(de_city, ar_city, distance, de_date, ar_date,  gate, aircraft)
         if flightid is not None:
             msg = "Record successfully added"
             return render_template("flights.html", result=request.form, msg=msg)
