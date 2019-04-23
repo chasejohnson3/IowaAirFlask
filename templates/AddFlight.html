@@ -1,0 +1,55 @@
+
+<body>
+
+<form action="http://localhost:5000/addflight" method="POST" enctype="multipart/form-data" >
+        <p style="color: red;">{{error}}</p>
+        <div style="width: 1200px; margin-left: auto; margin-right: auto;">
+
+
+            <div>
+            <p class="data">Departure City:</p>
+            <input class="data" name="de_city"/>
+            </div>
+
+            <div>
+            <p class="data">Arrival City:</p>
+            <input class="data" name="ar_city"/>
+            </div>
+
+            <div>
+            <p class="data">Distance:</p>
+            <input class="data" name="distance"/>
+            </div>
+
+            <div>
+            <p class="datetime">Departure time:</p>
+            <input class="datetime" name="de_date"/>
+            </div>
+
+            <div>
+            <p class="datetime">Arriving time:</p>
+            <input class="datetime" name="ar_date"/>
+            </div>
+
+
+            <div>
+            <p class="data">Gate:</p>
+            <input class="data" name="gate"/>
+            </div>
+
+            <div>
+            <p class="data">Aircraft:</p>
+            <input class="data" name="aircraft"/>
+            </div>
+
+
+        </div>
+        <!--</form>-->
+    <p style="color: red;">{{error}}</p>
+    <p><input type="submit" value="submit"/></p>
+</form>
+
+<br>
+<a href="/">Go back to home page</a>
+</body>
+</html>
