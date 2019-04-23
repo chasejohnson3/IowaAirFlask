@@ -182,10 +182,11 @@ def singlesearch():
         departure_date = request.form['departure_date']
 
     conn = dbconn()
-    sql = "SELECT * FROM flights WHERE `Departing_City` = %s AND `Arriving_City` = %s AND `Departure_Datetime` = %s;"
+    sql = 'SELECT * FROM iowa_air_gcp.flights WHERE `Departing_City` = "'+from_city+'" AND `Arriving_City` = "'+to_city+'" AND `Departure_Datetime` LIKE "' + departure_date + '%";'
+
     cursor = conn.cursor()
     try:
-        cursor.execute(sql, (from_city, to_city, departure_date))
+        cursor.execute(sql)
         rows = cursor.fetchall()
         data = []
         for row in rows:
