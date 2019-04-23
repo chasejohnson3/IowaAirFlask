@@ -36,6 +36,13 @@ def delete_user_by_id(id):
     conn.commit()
     conn.close()
 
+def delete_flight_by_id(id):
+    conn = dbconn()
+    sql = "DELETE FROM flights WHERE idflights = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, id)
+    conn.commit()
+    conn.close()
 
 
 def get_first_name_by_id(id):
@@ -61,6 +68,19 @@ def get_idusers_by_email(email):
     sql = "SELECT idusers FROM users WHERE email = %s"
     cursor = conn.cursor()
     cursor.execute(sql, email)
+    rows = cursor.fetchall()
+    conn.close()
+    if cursor.rowcount > 0:
+        return str(rows[0][0])
+    else:
+        return None
+
+
+def get_city_by_flightid(id):
+    conn = dbconn()
+    sql = "SELECT Departing_City FROM flights WHERE idflights = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, id)
     rows = cursor.fetchall()
     conn.close()
     if cursor.rowcount > 0:
@@ -115,6 +135,28 @@ def add_user(email, first_name=None, last_name=None, middle_name=None, suffix=No
         conn.commit()
         conn.close()
         return current_user_id
+
+
+
+def add_flight(Departing_City=None, Arriving_City=None, Distance=0, Departure_Datetime=None, Arrival_Datetime=None, Classes=None,Gate=None,  Aircraft=None):
+
+    # If a user with the given email already exists, do not allow a new email with this email to be created
+    id = get_uuid()
+    if get_city_by_flightid(id) is not None:
+        return None
+    else:
+        conn = dbconn()
+        sql = "INSERT INTO flights(idflights, Departing_City, Arriving_City, Distance, Departure_Datetime, Arrival_Datetime, Classes, " \
+              "Gate,  Aircraft) " \
+              "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor = conn.cursor()
+        cursor.execute(sql, (
+            id, Departing_City, Arriving_City, Distance, Departure_Datetime, Arrival_Datetime, Classes,Gate, Aircraft))
+        # session['username'] = str(id)
+        conn.commit()
+        conn.close()
+        return id
+
 
 
 def check_password_by_email(email, password):
@@ -212,6 +254,14 @@ def fligtresult():
 @app.route('/round-result')
 def fligtresult2():
     return render_template('FlightsResult.html')
+
+
+@app.route('/addflight')
+def addFlight():
+    return render_template('AddFlight.html')
+
+
+
 
 
 @app.route('/bookflight-roundtrip', methods=['POST', 'GET'])
@@ -341,9 +391,31 @@ def users():
         conn.close()
 
 
+@app.route('/addflight', methods=['POST', 'GET'])
+def Flights():
+    if request.method == 'POST':
+        # try:
+        de_city = request.form['de_city']
+        ar_city = request.form['ar_city']
+        distance = request.form['distance']
+        de_date = request.form['de_date']
+        ar_date = request.form['ar_date']
+        classes = request.form['classes']
+        gate = request.form['gate']
+        aircraft = request.form['aircraft']
+
+        flightid = add_flight(de_city, ar_city, distance, de_date, ar_date, classes, gate, aircraft)
+        if flightid is not None:
+            msg = "Record successfully added"
+            return render_template("flights.html", result=request.form, msg=msg)
+            # return render_template("users.html", result=request.form, msg=msg)
+        else:
+            return render_template("AddFlight.html", error="A flight with this id already exists")
+
+
 
 def get_uuid():
-    id = str(datetime.datetime.now().year)[2:4] + str(datetime.datetime.now().month) + str(datetime.datetime.now().day) + str(
+    id = str(datetime.datetime.now().month) + str(datetime.datetime.now().day) + str(
     datetime.datetime.now().hour) + str(datetime.datetime.now().minute) + str(datetime.datetime.now().second)
     return id
 
