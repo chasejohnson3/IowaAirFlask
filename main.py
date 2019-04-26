@@ -151,7 +151,7 @@ def add_user(email, first_name=None, last_name=None, password=None, is_admin=Fal
 
 
 
-def add_flight( Departure_Datetime=None, Arrival_Datetime=None, Gate=None,  Aircraft=None, Departing_City=None, Arriving_City=None):
+def add_flight( Departure_Datetime=None, Arrival_Datetime=None, Gate=None,  Aircraft=None, Departing_City=None,  Arriving_City=None, Distance=None):
 
     # If a user with the given email already exists, do not allow a new email with this email to be created
     id = get_uuid()
@@ -159,10 +159,10 @@ def add_flight( Departure_Datetime=None, Arrival_Datetime=None, Gate=None,  Airc
         return None
     else:
         conn = dbconn()
-        sql = "CALL add_flight(%s,%s,%s,%s,%s,%s,%s)"
+        sql = "CALL add_flight(%s,%s,%s,%s,%s,%s,%s,%s)"
         cursor = conn.cursor()
         cursor.execute(sql, (
-            id, Departure_Datetime, Arrival_Datetime, Gate, Aircraft, Departing_City, Arriving_City))
+            id, Departure_Datetime, Arrival_Datetime, Gate, Aircraft, Departing_City, Arriving_City, Distance))
         # session['username'] = str(id)
         conn.commit()
         conn.close()
@@ -306,9 +306,6 @@ def addFlight():
     return render_template('AddFlight.html')
 
 
-
-
-
 @app.route('/bookflight-roundtrip', methods=['POST', 'GET'])
 def roundsearch():
     if request.method == 'POST':
@@ -345,15 +342,35 @@ def roundsearch():
 @app.route('/viewall')
 def viewall():
     conn = dbconn()
-    sql = "SELECT * FROM flights"
+    sql = "CALL view_all_flights;"
+    # sql = "SELECT * FROM flights"
     cursor = conn.cursor()
     cursor.execute(sql)
     rows = cursor.fetchall()
     data=[]
     for row in rows:
-        temp = [row[1], row[2]]
-        data.append(list(temp))
+        # temp = [row[1], row[2]]
+        # data.append(list(temp))
+        data.append(row)
     conn.close()
+
+
+
+    try:
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        data = []
+        # for row in rows:
+        #     temp = [row[0], row[1], row[2], from_city, to_city]
+        #     data.append(list(temp))
+
+        cursor.close()
+        conn.close()
+    except Exception:
+        print("bad")
+
+
+
     return render_template("list.html", rows=data)
 
 @app.route('/flight-link', methods=['POST', 'GET'])
@@ -435,11 +452,12 @@ def Flights():
         ar_date = request.form['ar_date']
         gate = request.form['gate']
         aircraft = request.form['aircraft']
+        distance = request.form['distance']
         de = de_date+" "+ de_time+ ":00";
         ar = ar_date + " " + ar_time + ":00";
         print(de);
 
-        flightid = add_flight(de, ar,  gate, aircraft, de_city, ar_city)
+        flightid = add_flight(de, ar,  gate, aircraft, de_city, ar_city, distance)
         if flightid is not None:
             msg = "Record successfully added"
             return render_template("flights.html", result=request.form, msg=msg)
