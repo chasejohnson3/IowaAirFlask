@@ -32,6 +32,7 @@ class TestDatabaseFunctions(unittest.TestCase):
 
     def test_check_if_id_exists(self):
         id = add_user("test")
+        print("id from add_user: " + str(id))
         self.assertTrue(check_if_id_exists(id))
         self.assertFalse(check_if_id_exists("nonsense"))
         delete_user_by_id(id)

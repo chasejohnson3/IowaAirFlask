@@ -102,6 +102,8 @@ def count_users_by_name(first_name):
 def check_if_id_exists(id):
     conn = dbconn()
     sql = "SELECT idusers FROM users WHERE idusers = %s"
+    # sql = "SELECT idusers FROM users WHERE idusers = " + str(id)
+    print(sql)
     cursor = conn.cursor()
     cursor.execute(sql, id)
     conn.close()
@@ -111,22 +113,20 @@ def check_if_id_exists(id):
         return False
 
 
-def add_user(email, first_name=None, last_name=None, middle_name=None, suffix=None, preferred_name=None, date_of_birth=None, gender=None, country=None, state=None,
-             city=None, address=None, postal_code=None, phone_number=None, password=None, secure_traveler=None):
+def add_user(email, first_name=None, last_name=None, password=None, is_admin=False):
 
     # If a user with the given email already exists, do not allow a new email with this email to be created
     if get_idusers_by_email(email) is not None:
         return None
     else:
         conn = dbconn()
-        sql = "INSERT INTO users(idusers, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, " \
-              "gender, country, state, city, address, postal_code, email, phone_number, password) " \
-              "VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        sql = "INSERT INTO users(idusers, first_name, last_name, email, password, is_admin) " \
+              "VALUES(%s, %s, %s, %s, %s, %s)"
         cursor = conn.cursor()
 
         id = get_uuid()
         print("UUID is " + str(id))
-        cursor.execute(sql, (id, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state, city, address, postal_code, email, phone_number, password))  # the 1 at the end logs the user in
+        cursor.execute(sql, (id, first_name, last_name, email, password, is_admin))  # the 1 at the end logs the user in
         current_user_id = id
         # session['username'] = str(id)
         conn.commit()
@@ -363,23 +363,11 @@ def users():
         # try:
         first_name = request.form['first_name']
         last_name = request.form['last_name']
-        middle_name = request.form['middle_name']
-        suffix = request.form['suffix']
-        preferred_name = request.form['preferred_name']
-        date_of_birth = request.form['date_of_birth']
-        gender = request.form['gender']
-        country = request.form['country']
-        state = request.form['state']
-        city = request.form['city']
-        address = request.form['address']
-        postal_code = request.form['postal_code']
         email = request.form['email']
-        phone_number = request.form['phone_number']
         password = request.form['password']
-        secure_traveler = request.form['secure_traveler']
+        is_admin = request.form['is_admin']
 
-        user_id = add_user(email, first_name, last_name, middle_name, suffix, preferred_name, date_of_birth, gender, country, state,
-                 city, address, postal_code, phone_number, password)
+        user_id = add_user(email, first_name, last_name, password, is_admin=is_admin)
         if user_id is not None:
             session['idusers'] = user_id
             msg = "Record successfully added"
