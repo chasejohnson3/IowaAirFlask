@@ -264,9 +264,33 @@ def empty():
     return render_template('Empty.html')
 
 
-@app.route('/bookSuccess')
+@app.route('/bookConfirm', methods=['POST', 'GET'])
+def confirm():
+    if 'idusers' in session:
+        first_name = get_first_name_by_id(session['idusers'])
+        idusers = session['idusers']
+        t_flight_id = request.form["flight_id"]
+        return render_template("bookConfirm.html", first_name=first_name, idusers=idusers, flightid=t_flight_id)
+
+    else:
+        return render_template('LogIn.html', error = "You need to login first")
+
+
+@app.route('/bookSuccess', methods=['POST', 'GET'])
 def success():
-    return render_template('bookSuccess.html')
+
+    flightid = request.form['flight_id']
+    userid = request.form['user_id'][0:-1]
+
+    conn = dbconn()
+    sql = "CALL bookflight(%s,%s);"
+    cursor = conn.cursor()
+    cursor.execute(sql, (flightid, userid))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return render_template("bookSuccess.html")
+
 
 
 @app.route('/single-result')
