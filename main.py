@@ -253,7 +253,7 @@ def singlesearch():
 
         cursor.close()
         conn.close()
-        return render_template("FlightsResult.html", rows=data)
+        return render_template("FlightsResult.html", rows=data, from_city_html=from_city)
 
     except:
         return render_template('Empty.html')
