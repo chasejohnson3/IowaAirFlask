@@ -2,9 +2,10 @@
 <body>
 
 <form action="http://localhost:5000/adduser" method="POST" enctype="multipart/form-data" >
-        <p style="color: red;">{{error}}</p>
-        <div style="width: 1200px; margin-left: auto; margin-right: auto;">
 
+    <h1>Add New User</h1>
+    <hr>
+        <div style="width: 1200px; margin-left: auto; margin-right: auto;">
             <div>
             <p class="data">First Name:</p>
             <input class="data" name="first_name"/>
@@ -28,10 +29,10 @@
 
             <input type="radio" name="is_admin" value=1>I am an administrator.<br>
             <input type="radio" name="is_admin" value=0 checked>I am not an administrator.<br>
+
+            <p style="color: red;">{{error}}</p>
+            <p><input type="submit" value="submit"/></p>
         </div>
-        <!--</form>-->
-    <p style="color: red;">{{error}}</p>
-    <p><input type="submit" value="submit"/></p>
 </form>
 
 <br>
