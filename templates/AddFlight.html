@@ -16,19 +16,28 @@
             <input class="data" name="ar_city"/>
             </div>
 
-            <div>
-            <p class="data">Distance:</p>
-            <input class="data" name="distance"/>
+             <div>
+            <p class="date">Departure date:</p>
+            <input  type="date" name="de_date" min="2019-05-01" max="2019-07-31" required/>
+                 <span class="validity"></span>
             </div>
 
             <div>
-            <p class="datetime">Departure time:</p>
-            <input class="datetime" name="de_date"/>
+            <p class="time">Departure time:</p>
+            <input type="time" name="de_time" required/>
+                <span class="validity"></span>
             </div>
 
             <div>
-            <p class="datetime">Arriving time:</p>
-            <input class="datetime" name="ar_date"/>
+            <p class="date">Arriving date:</p>
+            <input  type="date" name="ar_date" min="2019-05-01" max="2019-07-31" required/>
+                 <span class="validity"></span>
+            </div>
+
+            <div>
+            <p class="time">Arriving time:</p>
+            <input type="time" name="ar_time" required/>
+                <span class="validity"></span>
             </div>
 
 
