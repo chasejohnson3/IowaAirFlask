@@ -12,7 +12,6 @@
 <br>
 <br>
 
-
 {% if idusers == None %}
 <a href="/login">Log in</a>
 {% else %}
@@ -45,7 +44,10 @@
 
 <br>
 <br>
+
+{% if is_admin == 1 %}
 <a href="/addflight"> Add Flight </a>
+{% endif %}
 
 </body>
 </html>

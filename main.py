@@ -89,6 +89,22 @@ def get_city_by_flightid(id):
         return None
 
 
+def get_user_is_admin(id):
+    conn = dbconn()
+    sql = "SELECT is_admin FROM users WHERE idusers = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, id)
+    rows = cursor.fetchall()
+    conn.close()
+    if cursor.rowcount > 0:
+        if rows[0][0] is 0:
+            return False
+        if rows[0][0] is 1:
+            return True
+    else:
+        return None
+
+
 def count_users_by_name(first_name):
     conn = dbconn()
     sql = "SELECT COUNT(idusers) FROM users WHERE first_name = %s"
@@ -172,10 +188,12 @@ def check_password_by_email(email, password):
 def home():
     first_name = ""
     idusers = None
+    is_admin = False
     if 'idusers' in session:
         first_name = get_first_name_by_id(session['idusers'])
         idusers = session['idusers']
-    return render_template("home.html", first_name=first_name, idusers=idusers)
+        is_admin = get_user_is_admin(idusers)
+    return render_template("home.html", first_name=first_name, idusers=idusers, is_admin=is_admin)
 
 
 @app.route('/logout')
@@ -351,8 +369,8 @@ def login_action():
         session['idusers'] = get_idusers_by_email(email)
     else:
         return render_template("LogIn.html", error="Incorrect Username/Password")
-
-    return render_template("home.html", first_name=get_first_name_by_id(session['idusers']))
+    # return redirect("/", first_name=get_first_name_by_id(session['idusers']))
+    return render_template("home.html", first_name=get_first_name_by_id(session['idusers']), is_admin=get_user_is_admin(session['idusers']))
 
 
 # Adds a user's information to the database
