@@ -12,7 +12,6 @@
 <br>
 <br>
 
-
 {% if idusers == None %}
 <a href="/login">Log in</a>
 {% else %}
@@ -20,11 +19,7 @@
 {%endif%}
 
 <br>
-<br>
 
-<a href="/viewall">View All</a>
-
-<br>
 <br>
 
 <a href="/bookflight-single"> Book Single Way Flight</a>
@@ -45,7 +40,15 @@
 
 <br>
 <br>
+
+{% if is_admin == 1 %}
 <a href="/addflight"> Add Flight </a>
+<br>
+<br>
+<a href="/viewall">View All</a>
+<br>
+<br>
+{% endif %}
 
 </body>
 </html>
