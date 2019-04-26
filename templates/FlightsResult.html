@@ -1,15 +1,15 @@
 <!doctype html>
 <html>
 <body>
-<form>
+
     <table border=1>
         <thead>
         <td>Flight ID</td>
-        <td>Departing City</td>
-        <td>Arriving City</td>
-        <td>Distance</td>
         <td>Departing Time</td>
         <td>Arriving Time</td>
+        <td>Departing City</td>
+        <td>Arriving City</td>
+        <td>Book the Flight</td>
         </thead>
         {% for row in rows %}
         <tr>
@@ -18,11 +18,15 @@
             <td>{{row[2]}}</td>
             <td>{{row[3]}}</td>
             <td>{{row[4]}}</td>
-            <td>{{row[5]}}</td>
+            <td>
+                <form action="/bookSuccess" method="POST">
+                    <p><input type="submit" value="Book me"/></p>
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </table>
-
+<form>
     <a href="/bookflight-single">Return to searching page</a>
 
 </form>
