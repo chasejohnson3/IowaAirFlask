@@ -284,9 +284,6 @@ def addFlight():
     return render_template('AddFlight.html')
 
 
-
-
-
 @app.route('/bookflight-roundtrip', methods=['POST', 'GET'])
 def roundsearch():
     if request.method == 'POST':
@@ -323,15 +320,35 @@ def roundsearch():
 @app.route('/viewall')
 def viewall():
     conn = dbconn()
-    sql = "SELECT * FROM flights"
+    sql = "CALL view_all_flights;"
+    # sql = "SELECT * FROM flights"
     cursor = conn.cursor()
     cursor.execute(sql)
     rows = cursor.fetchall()
     data=[]
     for row in rows:
-        temp = [row[1], row[2]]
-        data.append(list(temp))
+        # temp = [row[1], row[2]]
+        # data.append(list(temp))
+        data.append(row)
     conn.close()
+
+
+
+    try:
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        data = []
+        # for row in rows:
+        #     temp = [row[0], row[1], row[2], from_city, to_city]
+        #     data.append(list(temp))
+
+        cursor.close()
+        conn.close()
+    except Exception:
+        print("bad")
+
+
+
     return render_template("list.html", rows=data)
 
 @app.route('/flight-link', methods=['POST', 'GET'])
