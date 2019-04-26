@@ -2,6 +2,8 @@
 <body>
 
 <form action="http://localhost:5000/login" method="POST" enctype="multipart/form-data" >
+    <h1>Login</h1>
+    <hr>
         <div style="width: 1200px; margin-left: auto; margin-right: auto;">
             <div>
             <p class="data">Email:</p>
@@ -12,10 +14,9 @@
             <p class="data">Password:</p>
             <input class="data" name="password"/>
             </div>
+            <p style="color: red;">{{error}}</p>
+            <p><input type="submit" value="submit"/></p>
         </div>
-        <!--</form>-->
-        <p style="color: red;">{{error}}</p>
-    <p><input type="submit" value="submit"/></p>
 </form>
 
 <br>

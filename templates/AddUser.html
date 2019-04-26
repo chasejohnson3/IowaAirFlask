@@ -2,9 +2,10 @@
 <body>
 
 <form action="http://localhost:5000/adduser" method="POST" enctype="multipart/form-data" >
-        <p style="color: red;">{{error}}</p>
-        <div style="width: 1200px; margin-left: auto; margin-right: auto;">
 
+    <h1>Add New User</h1>
+    <hr>
+        <div style="width: 1200px; margin-left: auto; margin-right: auto;">
             <div>
             <p class="data">First Name:</p>
             <input class="data" name="first_name"/>
@@ -16,78 +17,22 @@
             </div>
 
             <div>
-            <p class="data">Middle Name:</p>
-            <input class="data" name="middle_name"/>
-            </div>
-
-            <div>
-            <p class="data">Suffix Name:</p>
-            <input class="data" name="suffix"/>
-            </div>
-
-            <div>
-            <p class="data">Preferred Name:</p>
-            <input class="data" name="preferred_name"/>
-            </div>
-
-            <div>
-            <p class="data">Date of Birth:</p>
-            <input class="data" name="date_of_birth"/>
-            </div>
-
-            <div>
-            <p class="data">Gender:</p>
-            <input class="data" name="gender"/>
-            </div>
-
-            <div>
-            <p class="data">Country:</p>
-            <input class="data" name="country"/>
-            </div>
-
-            <div>
-            <p class="data">State:</p>
-            <input class="data" name="state"/>
-            </div>
-
-            <div>
-            <p class="data">City:</p>
-            <input class="data" name="city"/>
-            </div>
-
-            <div>
-            <p class="data">Address:</p>
-            <input class="data" name="address"/>
-            </div>
-
-            <div>
-            <p class="data">Postal Code:</p>
-            <input class="data" name="postal_code"/>
-            </div>
-
-            <div>
-            <p class="data">Phone Number:</p>
-            <input class="data" name="phone_number"/>
-            </div>
-
-            <div>
-            <p class="data">Secure Traveler:</p>
-            <input class="data" name="secure_traveler"/>
-            </div>
-
-            <div>
             <p class="data">Email:</p>
-            <input class="data" name="email"/>
+            <input class="data" name="email" required="True"/>
             </div>
 
             <div>
             <p class="data">Password:</p>
-            <input class="data" name="password"/>
+            <input class="data" type="password" name="password"/>
             </div>
+            <br>
+
+            <input type="radio" name="is_admin" value=1>I am an administrator.<br>
+            <input type="radio" name="is_admin" value=0 checked>I am not an administrator.<br>
+
+            <p style="color: red;">{{error}}</p>
+            <p><input type="submit" value="submit"/></p>
         </div>
-        <!--</form>-->
-    <p style="color: red;">{{error}}</p>
-    <p><input type="submit" value="submit"/></p>
 </form>
 
 <br>
