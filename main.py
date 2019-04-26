@@ -135,7 +135,7 @@ def add_user(email, first_name=None, last_name=None, middle_name=None, suffix=No
 
 
 
-def add_flight( Departure_Datetime=None, Arrival_Datetime=None, Gate=None,  Aircraft=None, Departing_City=None, Arriving_City=None):
+def add_flight( Departure_Datetime=None, Arrival_Datetime=None, Gate=None,  Aircraft=None, Departing_City=None,  Arriving_City=None, Distance=None):
 
     # If a user with the given email already exists, do not allow a new email with this email to be created
     id = get_uuid()
@@ -143,10 +143,10 @@ def add_flight( Departure_Datetime=None, Arrival_Datetime=None, Gate=None,  Airc
         return None
     else:
         conn = dbconn()
-        sql = "CALL add_flight(%s,%s,%s,%s,%s,%s,%s)"
+        sql = "CALL add_flight(%s,%s,%s,%s,%s,%s,%s,%s)"
         cursor = conn.cursor()
         cursor.execute(sql, (
-            id, Departure_Datetime, Arrival_Datetime, Gate, Aircraft, Departing_City, Arriving_City))
+            id, Departure_Datetime, Arrival_Datetime, Gate, Aircraft, Departing_City, Arriving_City, Distance))
         # session['username'] = str(id)
         conn.commit()
         conn.close()
@@ -398,11 +398,12 @@ def Flights():
         ar_date = request.form['ar_date']
         gate = request.form['gate']
         aircraft = request.form['aircraft']
+        distance = request.form['distance']
         de = de_date+" "+ de_time+ ":00";
         ar = ar_date + " " + ar_time + ":00";
         print(de);
 
-        flightid = add_flight(de, ar,  gate, aircraft, de_city, ar_city)
+        flightid = add_flight(de, ar,  gate, aircraft, de_city, ar_city, distance)
         if flightid is not None:
             msg = "Record successfully added"
             return render_template("flights.html", result=request.form, msg=msg)
