@@ -76,9 +76,9 @@ def get_idusers_by_email(email):
         return None
 
 
-def get_city_by_flightid(id):
+def get_id_by_flightid(id):
     conn = dbconn()
-    sql = "SELECT Departing_City FROM flights WHERE idflights = %s"
+    sql = "SELECT idflights FROM flights WHERE idflights = %s"
     cursor = conn.cursor()
     cursor.execute(sql, id)
     rows = cursor.fetchall()
@@ -151,20 +151,18 @@ def add_user(email, first_name=None, last_name=None, password=None, is_admin=Fal
 
 
 
-def add_flight(Departing_City=None, Arriving_City=None, Distance=0, Departure_Datetime=None, Arrival_Datetime=None, Gate=None,  Aircraft=None):
+def add_flight( Departure_Datetime=None, Arrival_Datetime=None, Gate=None,  Aircraft=None, Departing_City=None,  Arriving_City=None, Distance=None):
 
     # If a user with the given email already exists, do not allow a new email with this email to be created
     id = get_uuid()
-    if get_city_by_flightid(id) is not None:
+    if get_id_by_flightid(id) is not None:
         return None
     else:
         conn = dbconn()
-        sql = "INSERT INTO flights(idflights, Departing_City, Arriving_City, Distance, Departure_Datetime, Arrival_Datetime," \
-              "Gate,  Aircraft) " \
-              "VALUES(%s, %s, %s, %s, %s, %s, %s, %s)"
+        sql = "CALL add_flight(%s,%s,%s,%s,%s,%s,%s,%s)"
         cursor = conn.cursor()
         cursor.execute(sql, (
-            id, Departing_City, Arriving_City, Distance, Departure_Datetime, Arrival_Datetime, Gate, Aircraft))
+            id, Departure_Datetime, Arrival_Datetime, Gate, Aircraft, Departing_City, Arriving_City, Distance))
         # session['username'] = str(id)
         conn.commit()
         conn.close()
@@ -264,9 +262,33 @@ def empty():
     return render_template('Empty.html')
 
 
-@app.route('/bookSuccess')
+@app.route('/bookConfirm', methods=['POST', 'GET'])
+def confirm():
+    if 'idusers' in session:
+        first_name = get_first_name_by_id(session['idusers'])
+        idusers = session['idusers']
+        t_flight_id = request.form["flight_id"]
+        return render_template("bookConfirm.html", first_name=first_name, idusers=idusers, flightid=t_flight_id)
+
+    else:
+        return render_template('LogIn.html', error = "You need to login first")
+
+
+@app.route('/bookSuccess', methods=['POST', 'GET'])
 def success():
-    return render_template('bookSuccess.html')
+
+    flightid = request.form['flight_id']
+    userid = request.form['user_id'][0:-1]
+
+    conn = dbconn()
+    sql = "CALL bookflight(%s,%s);"
+    cursor = conn.cursor()
+    cursor.execute(sql, (flightid, userid))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return render_template("bookSuccess.html")
+
 
 
 @app.route('/single-result')
@@ -355,13 +377,12 @@ def viewall():
 def flightlink():
     if request.method == 'POST':
         id = request.form['id']
-        from_ = request.form['from']
-        to = request.form['to']
+
     conn = dbconn()
     cursor = conn.cursor()
-    sql = "SELECT * FROM flights WHERE idflights = %s AND Departing_City = %s AND Arriving_City = %s ;"
+    sql = "SELECT * FROM flights WHERE idflights = %s;"
     try:
-        cursor.execute(sql, (id, from_, to))
+        cursor.execute(sql, (id))
         rows = cursor.fetchall()
         data = []
         for row in rows:
@@ -425,13 +446,18 @@ def Flights():
         # try:
         de_city = request.form['de_city']
         ar_city = request.form['ar_city']
-        distance = request.form['distance']
+        de_time = request.form['de_time']
         de_date = request.form['de_date']
+        ar_time = request.form['ar_time']
         ar_date = request.form['ar_date']
         gate = request.form['gate']
         aircraft = request.form['aircraft']
+        distance = request.form['distance']
+        de = de_date+" "+ de_time+ ":00";
+        ar = ar_date + " " + ar_time + ":00";
+        print(de);
 
-        flightid = add_flight(de_city, ar_city, distance, de_date, ar_date,  gate, aircraft)
+        flightid = add_flight(de, ar,  gate, aircraft, de_city, ar_city, distance)
         if flightid is not None:
             msg = "Record successfully added"
             return render_template("flights.html", result=request.form, msg=msg)
