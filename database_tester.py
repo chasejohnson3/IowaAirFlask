@@ -50,3 +50,14 @@ class TestDatabaseFunctions(unittest.TestCase):
         self.assertEqual(expected_test_name, actual_first_name)
         delete_user_by_id(id)
 
+
+    def test_get_user_is_admin(self):
+        id = add_user("test")
+        self.assertFalse(get_user_is_admin(id))
+        delete_user_by_id(id)
+        id = add_user("test", is_admin=False)
+        self.assertFalse(get_user_is_admin(id))
+        delete_user_by_id(id)
+        id = add_user("test", is_admin=True)
+        self.assertTrue(get_user_is_admin(id))
+        delete_user_by_id(id)
