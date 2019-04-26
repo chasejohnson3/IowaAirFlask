@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Success</title>
+</head>
+<body>
+<form action="http://localhost:5000/bookSuccess" method="POST">
+    <div style="width: 1200px; margin-left: auto; margin-right: auto;">
+
+    <p>Please confirm your booking information</p>
+
+    <p>Your user ID: {{idusers}}</p>
+    <input class="data" name="user_id" value={{idusers}}/>
+
+    <p>Your first name: {{first_name}}</p>
+
+    <p>Your flight ID: {{flightid}}</p>
+    <input class="data" name="flight_id" value={{flightid}} />
+
+    </div>
+
+    <p><input type="submit" value="Confirm and Book it!!!"/></p>
+
+
+</form>
+
+</body>
+</html>
