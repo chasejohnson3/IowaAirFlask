@@ -88,6 +88,18 @@ def get_id_by_flightid(id):
     else:
         return None
 
+def get_id_by_craftname(name):
+    conn = dbconn()
+    sql = "SELECT AircraftID FROM Aircraft WHERE Name = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, name)
+    rows = cursor.fetchall()
+    conn.close()
+    if cursor.rowcount > 0:
+        return str(rows[0][0])
+    else:
+        return None
+
 
 def get_user_is_admin(id):
     conn = dbconn()
@@ -103,6 +115,8 @@ def get_user_is_admin(id):
             return True
     else:
         return None
+
+
 
 
 def count_users_by_name(first_name):
@@ -168,6 +182,23 @@ def add_flight( Departure_Datetime=None, Arrival_Datetime=None, Gate=None,  Airc
         conn.close()
         return id
 
+
+def add_aircraft( name, capacity):
+
+    # If a user with the given email already exists, do not allow a new email with this email to be created
+    id = get_uuid()
+    if get_id_by_craftname(name) is not None:
+        return None
+    else:
+        conn = dbconn()
+        sql = "CALL add_aircraft(%s,%s,%s)"
+        cursor = conn.cursor()
+        cursor.execute(sql, (
+            id,name, capacity))
+        # session['username'] = str(id)
+        conn.commit()
+        conn.close()
+        return id
 
 
 def check_password_by_email(email, password):
@@ -303,7 +334,29 @@ def fligtresult2():
 
 @app.route('/addflight')
 def addFlight():
-    return render_template('AddFlight.html')
+    if request.method == 'POST':
+        id = request.form['id']
+    conn = dbconn()
+    cursor = conn.cursor()
+    sql = "SELECT Name FROM Aircraft;"
+    try:
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        data = []
+        for row in rows:
+            temp = [row[0]]
+            data.append(list(temp))
+        cursor.close()
+        conn.close()
+        return render_template('AddFlight.html', rows=data)
+
+    except:
+        return render_template('Empty.html')
+
+
+@app.route('/addcraft')
+def addCraft():
+    return render_template('AddAircraft.html')
 
 
 @app.route('/bookflight-roundtrip', methods=['POST', 'GET'])
@@ -455,7 +508,6 @@ def Flights():
         distance = request.form['distance']
         de = de_date+" "+ de_time+ ":00";
         ar = ar_date + " " + ar_time + ":00";
-        print(de);
 
         flightid = add_flight(de, ar,  gate, aircraft, de_city, ar_city, distance)
         if flightid is not None:
@@ -465,6 +517,21 @@ def Flights():
         else:
             return render_template("AddFlight.html", error="A flight with this id already exists")
 
+
+@app.route('/addcraft', methods=['POST', 'GET'])
+def Aircraft():
+    if request.method == 'POST':
+        # try:
+        name = request.form['name']
+        capacity = request.form['capacity']
+
+        flightid = add_aircraft(name,capacity)
+        if flightid is not None:
+            msg = "Record successfully added"
+            return render_template("addcraftsuccess.html", result=request.form, msg=msg)
+            # return render_template("users.html", result=request.form, msg=msg)
+        else:
+            return render_template("AddAircraft.html", error="A Aircraft with this id already exists")
 
 
 def get_uuid():
