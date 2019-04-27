@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<br>
+
+<table border=1>
+    {% for key, value in result.items() %}
+
+    <tr>
+        <th> {{ key }}</th>
+        <td> {{ value }}</td>
+    </tr>
+
+    {% endfor %}
+</table>
+
+</br>
+{{msg}}
+
+<br>
+<a href="/">Go back to home page</a>
+</body>
+</html>
