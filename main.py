@@ -339,6 +339,7 @@ def roundsearch():
     except:
         return render_template('Empty.html')
 
+
 @app.route('/viewall')
 def viewall():
     conn = dbconn()
@@ -347,31 +348,14 @@ def viewall():
     cursor = conn.cursor()
     cursor.execute(sql)
     rows = cursor.fetchall()
-    data=[]
+    data = []
     for row in rows:
         # temp = [row[1], row[2]]
         # data.append(list(temp))
         data.append(row)
     conn.close()
-
-
-
-    try:
-        cursor.execute(sql)
-        rows = cursor.fetchall()
-        data = []
-        # for row in rows:
-        #     temp = [row[0], row[1], row[2], from_city, to_city]
-        #     data.append(list(temp))
-
-        cursor.close()
-        conn.close()
-    except Exception:
-        print("bad")
-
-
-
     return render_template("list.html", rows=data)
+
 
 @app.route('/flight-link', methods=['POST', 'GET'])
 def flightlink():
