@@ -24,7 +24,6 @@ def check_for_logged_on():
         print("Someone is logged on")
     else:
         print("No one is logged on")
-
     conn.close()
 
 
@@ -209,6 +208,10 @@ def register():
 def addUser():
     return render_template('AddUser.html')
 
+# @app.route('/viewall')
+# def viewAllFlights():
+#     return render_template('list.html')
+
 @app.route('/bookflight-single')
 def bookFlightSingle():
     return render_template('BookFlight-Single.html')
@@ -271,7 +274,7 @@ def confirm():
         return render_template("bookConfirm.html", first_name=first_name, idusers=idusers, flightid=t_flight_id)
 
     else:
-        return render_template('LogIn.html', error = "You need to login first")
+        return render_template('LogIn.html', error="You need to login first")
 
 
 @app.route('/bookSuccess', methods=['POST', 'GET'])
@@ -344,17 +347,35 @@ def roundsearch():
 def viewall():
     conn = dbconn()
     sql = "CALL view_all_flights;"
-    # sql = "SELECT * FROM flights"
     cursor = conn.cursor()
     cursor.execute(sql)
     rows = cursor.fetchall()
     data = []
     for row in rows:
-        # temp = [row[1], row[2]]
-        # data.append(list(temp))
         data.append(row)
     conn.close()
     return render_template("list.html", rows=data)
+
+
+@app.route('/deleteFlight', methods=['POST', 'GET'])
+def deleteFlight():
+    delete_flight_by_id(request.form['flight_id'])
+    return render_template("deletedFlight.html")
+
+# @app.route('/editFlight', methods=['POST', 'GET'])
+# def editFlight():
+#     return render_template("editFlight.html")
+
+#
+# def confirm():
+#     if 'idusers' in session:
+#         first_name = get_first_name_by_id(session['idusers'])
+#         idusers = session['idusers']
+#         t_flight_id = request.form["flight_id"]
+#         return render_template("bookConfirm.html", first_name=first_name, idusers=idusers, flightid=t_flight_id)
+#
+#     else:
+#         return render_template('LogIn.html', error="You need to login first")
 
 
 @app.route('/flight-link', methods=['POST', 'GET'])
