@@ -13,20 +13,6 @@ def dbconn():
     return pymysql.connect(host='35.226.87.238', port=3306, user='root', password='kfoPkgr8xKQC', db='iowa_air_gcp')
 
 
-def check_for_logged_on():
-    conn = dbconn()
-    sql = "Select Count(idusers) FROM users WHERE logged_in=1"
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    rows = cursor.fetchall()
-    print(rows[0][0])
-    if rows[0][0] > 0:
-        print("Someone is logged on")
-    else:
-        print("No one is logged on")
-    conn.close()
-
-
 def delete_user_by_id(id):
     conn = dbconn()
     sql = "DELETE FROM users WHERE idusers = %s"
@@ -34,6 +20,7 @@ def delete_user_by_id(id):
     cursor.execute(sql, id)
     conn.commit()
     conn.close()
+
 
 def delete_flight_by_id(id):
     conn = dbconn()
@@ -415,20 +402,64 @@ def deleteFlight():
     delete_flight_by_id(request.form['flight_id'])
     return render_template("deletedFlight.html")
 
-# @app.route('/editFlight', methods=['POST', 'GET'])
-# def editFlight():
-#     return render_template("editFlight.html")
+@app.route('/editFlightPage', methods=['POST', 'GET'])
+def editFlightPage():
+    flight_id=request.form['flight_id']
+    departure_datetime=request.form['departure_time']
+    arrival_datetime=request.form['arrival_time']
+    gate=request.form['gate']
+    aircraft_name=request.form['aircraft_name']
+    departing_city=request.form['departing_city']
+    arriving_city=request.form['arriving_city']
 
-#
-# def confirm():
-#     if 'idusers' in session:
-#         first_name = get_first_name_by_id(session['idusers'])
-#         idusers = session['idusers']
-#         t_flight_id = request.form["flight_id"]
-#         return render_template("bookConfirm.html", first_name=first_name, idusers=idusers, flightid=t_flight_id)
-#
-#     else:
-#         return render_template('LogIn.html', error="You need to login first")
+    departure_date = departure_datetime.split(" ")[0]
+    departure_time = departure_datetime.split(" ")[1]
+    arrival_date = arrival_datetime.split(" ")[0]
+    arrival_time = arrival_datetime.split(" ")[1]
+
+    print("departure time is " + departure_time)
+
+    return render_template("editFlight.html", flight_id=flight_id,
+                           departure_time=departure_time,
+                           departure_date=departure_date,
+                           arrival_time=arrival_time,
+                           arrival_date=arrival_date,
+                           gate=gate,
+                           aircraft_name=aircraft_name,
+                           departing_city=departing_city,
+                           arriving_city=arriving_city)
+
+@app.route('/editFlight', methods=['POST', 'GET'])
+def editFlight():
+    # for key in request.form.keys():
+    #     print(key + ": " + request.form.keys[key])
+    flight_id = request.form['flight_id']
+    departure_time = request.form['departure_date'] + " " + request.form['departure_time']
+    arrival_time = request.form['arrival_date'] + " " + request.form['arrival_time']
+    gate = request.form['gate']
+    aircraft_name = request.form['aircraft_name']
+    departing_city = request.form['departing_city']
+    arriving_city = request.form['arriving_city']
+    new_aircraft_id = get_uuid()
+    new_d_city_id = get_uuid()
+    new_a_city_id = get_uuid()
+    new_endpoints_id = get_uuid()
+    conn = dbconn()
+    sql = "CALL update_flight(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
+    cursor = conn.cursor()
+    cursor.execute(sql, (flight_id,
+                         departure_time,
+                         arrival_time,
+                         gate,
+                         aircraft_name,
+                         departing_city,
+                         arriving_city,
+                         new_aircraft_id,
+                         new_d_city_id,
+                         new_a_city_id,
+                         new_endpoints_id))
+    conn.commit()
+    return render_template("updateFlightConfirmation.html", gate=gate)
 
 
 @app.route('/flight-link', methods=['POST', 'GET'])
