@@ -380,7 +380,6 @@ def editFlightPage():
 def editFlight():
     # for key in request.form.keys():
     #     print(key + ": " + request.form.keys[key])
-    new_aircraft_id = get_uuid()
     flight_id = request.form['flight_id']
     departure_time = request.form['departure_date'] + " " + request.form['departure_time']
     arrival_time = request.form['arrival_date'] + " " + request.form['arrival_time']
@@ -388,8 +387,12 @@ def editFlight():
     aircraft_name = request.form['aircraft_name']
     departing_city = request.form['departing_city']
     arriving_city = request.form['arriving_city']
+    new_aircraft_id = get_uuid()
+    new_d_city_id = get_uuid()
+    new_a_city_id = get_uuid()
+    new_endpoints_id = get_uuid()
     conn = dbconn()
-    sql = "CALL update_flight(%s, %s, %s, %s, %s, %s, %s, %s);"
+    sql = "CALL update_flight(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
     cursor = conn.cursor()
     cursor.execute(sql, (flight_id,
                          departure_time,
@@ -398,7 +401,10 @@ def editFlight():
                          aircraft_name,
                          departing_city,
                          arriving_city,
-                         new_aircraft_id))
+                         new_aircraft_id,
+                         new_d_city_id,
+                         new_a_city_id,
+                         new_endpoints_id))
     conn.commit()
     return render_template("updateFlightConfirmation.html", gate=gate)
 
