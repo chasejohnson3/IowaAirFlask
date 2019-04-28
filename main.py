@@ -13,19 +13,6 @@ def dbconn():
     return pymysql.connect(host='35.226.87.238', port=3306, user='root', password='kfoPkgr8xKQC', db='iowa_air_gcp')
 
 
-def check_for_logged_on():
-    conn = dbconn()
-    sql = "Select Count(idusers) FROM users WHERE logged_in=1"
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    rows = cursor.fetchall()
-    if rows[0][0] > 0:
-        print("Someone is logged on")
-    else:
-        print("No one is logged on")
-    conn.close()
-
-
 def delete_user_by_id(id):
     conn = dbconn()
     sql = "DELETE FROM users WHERE idusers = %s"
@@ -33,6 +20,7 @@ def delete_user_by_id(id):
     cursor.execute(sql, id)
     conn.commit()
     conn.close()
+
 
 def delete_flight_by_id(id):
     conn = dbconn()
@@ -392,15 +380,16 @@ def editFlightPage():
 def editFlight():
     # for key in request.form.keys():
     #     print(key + ": " + request.form.keys[key])
+    new_aircraft_id = get_uuid()
     flight_id = request.form['flight_id']
-    departure_time = None
-    arrival_time = None
+    departure_time = request.form['departure_date'] + " " + request.form['departure_time']
+    arrival_time = request.form['arrival_date'] + " " + request.form['arrival_time']
     gate = request.form['gate']
-    aircraft_name = None
-    departing_city = None
-    arriving_city = None
+    aircraft_name = request.form['aircraft_name']
+    departing_city = request.form['departing_city']
+    arriving_city = request.form['arriving_city']
     conn = dbconn()
-    sql = "CALL update_flight(%s, %s, %s, %s, %s, %s, %s);"
+    sql = "CALL update_flight(%s, %s, %s, %s, %s, %s, %s, %s);"
     cursor = conn.cursor()
     cursor.execute(sql, (flight_id,
                          departure_time,
@@ -408,7 +397,8 @@ def editFlight():
                          gate,
                          aircraft_name,
                          departing_city,
-                         arriving_city))
+                         arriving_city,
+                         new_aircraft_id))
     conn.commit()
     return render_template("updateFlightConfirmation.html", gate=gate)
 
