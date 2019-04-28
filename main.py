@@ -30,6 +30,13 @@ def delete_flight_by_id(id):
     conn.commit()
     conn.close()
 
+def delete_aircraft_by_id(id):
+    conn = dbconn()
+    sql = "DELETE FROM Aircraft WHERE AircraftID= %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, id)
+    conn.commit()
+    conn.close()
 
 def get_first_name_by_id(id):
     conn = dbconn()
@@ -115,11 +122,20 @@ def count_users_by_name(first_name):
     return rows[0][0]
 
 
+def count_flights_by_gate(gate):
+    conn = dbconn()
+    sql = "SELECT COUNT(idflights) FROM flights WHERE Gate = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, gate)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows[0][0]
+
+
 def check_if_id_exists(id):
     conn = dbconn()
     sql = "SELECT idusers FROM users WHERE idusers = %s"
     # sql = "SELECT idusers FROM users WHERE idusers = " + str(id)
-    print(sql)
     cursor = conn.cursor()
     cursor.execute(sql, id)
     conn.close()
@@ -127,6 +143,8 @@ def check_if_id_exists(id):
         return True
     else:
         return False
+
+
 
 
 def add_user(email, first_name=None, last_name=None, password=None, is_admin=False):
@@ -151,7 +169,7 @@ def add_user(email, first_name=None, last_name=None, password=None, is_admin=Fal
 
 
 
-def add_flight( Departure_Datetime=None, Arrival_Datetime=None, Gate=None,  Aircraft=None, Departing_City=None,  Arriving_City=None, Distance=None):
+def add_flight( Departure_Datetime="2019-01-01 00:00:00", Arrival_Datetime="2019-01-01 00:00:00", Gate=None,  Aircraft=None, Departing_City=None,  Arriving_City=None, Distance=0):
 
     # If a user with the given email already exists, do not allow a new email with this email to be created
     id = get_uuid()
@@ -547,10 +565,14 @@ def Flights():
 
         flightid = add_flight(de, ar,  gate, aircraft, de_city, ar_city, distance)
         if flightid is not None:
-            msg = "Record successfully added"
+            if get_id_by_flightid(flightid)!=flightid:
+                msg = "The flight already exist"
+            else:
+                msg = "Record successfully added"
             return render_template("flights.html", result=request.form, msg=msg)
             # return render_template("users.html", result=request.form, msg=msg)
         else:
+
             return render_template("AddFlight.html", error="A flight with this id already exists")
 
 
