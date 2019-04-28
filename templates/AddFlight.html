@@ -49,9 +49,32 @@
             </div>
 
             <div>
-            <p class="data">Aircraft:</p>
+            <p class="data">Aircraft Type:</p>
             <input class="data" name="aircraft"/>
             </div>
+
+    <table border=1>
+
+
+
+        <thead>
+        <td>NAME</td>
+        </thead>
+        {% for row in rows %}
+        <tr>
+            <td>{{row[0]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+<!--            <div>-->
+<!--            <label>Select list</label>-->
+<!--             <select name = "aircraft">-->
+<!--                a = get_allcraft();-->
+<!--               <option value = a> get_allcraft() </option>-->
+
+<!--             </select>-->
+<!--            </div>-->
 
 
             <div>
