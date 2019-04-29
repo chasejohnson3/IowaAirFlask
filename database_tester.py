@@ -61,3 +61,11 @@ class TestDatabaseFunctions(unittest.TestCase):
         id = add_user("test", is_admin=True)
         self.assertTrue(get_user_is_admin(id))
         delete_user_by_id(id)
+    #
+    # def test_single_search(self):
+    #     from_city = "New York City"
+    #     to_city = "Chicago"
+    #     departure_date = "2019-06-20"
+    #     result = singlesearch(from_city, to_city, departure_date)
+
+

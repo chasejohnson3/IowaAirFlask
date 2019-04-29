@@ -6,14 +6,12 @@
 <hr>
 
     <table border=1>
-
         <thead>
         <td>Flight ID</td>
         <td>Departing Time</td>
         <td>Arriving Time</td>
         <td>Departing City</td>
         <td>Arriving City</td>
-        <td>Book the Flight</td>
         </thead>
         {% for row in rows %}
         <tr>
@@ -22,18 +20,17 @@
             <td>{{row[2]}}</td>
             <td>{{row[3]}}</td>
             <td>{{row[4]}}</td>
-            <td>
-                <form action="/bookConfirm" method="POST">
-                    <p><input type="submit" value="Book_me" flight_id="{{row[0]}}"></p>
-                    <input type="text" value={{row[0]}} name="flight_id" hidden/>
-                </form>
-            </td>
         </tr>
         {% endfor %}
     </table>
-<form>
-    <a href="/bookflight-single">Return to searching page</a>
 
+<form action="/book" method="POST">
+    <p><input type="submit" value="Book Me!!!" ></p>
+    <input type="text" value={{row[0]}} name="flight_id" hidden/>
+</form>
+
+<form>
+    <a href="/bookflight-roundtrip">Return to searching page</a>
 </form>
 
 <br>

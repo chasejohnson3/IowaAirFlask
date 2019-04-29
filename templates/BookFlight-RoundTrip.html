@@ -16,13 +16,15 @@
             </div>
 
             <div>
-            <p class="data">Departure Date:    (Example: 2019-06-19 00:00:00)</p>
-            <input class="data" name="departure_date"/>
+            <p class="data">Departure Date:    (Example: 2019-06-19)</p>
+             <input type="date" name="departure_date" min="2019-06-01" max="2019-06-20" required>
+             <span class="validity"></span>
             </div>
 
             <div>
-            <p class="data">Return Date:       (Example: 2019-06-19 00:00:00)</p>
-            <input class="data" name="return_date"/>
+            <p class="data">Return Date:    (Example: 2019-06-20)</p>
+             <input type="date" name="return_date" min="2019-06-01" max="2019-06-20" required>
+             <span class="validity"></span>
             </div>
 
             <p><input type="submit" value="Search"/></p>
