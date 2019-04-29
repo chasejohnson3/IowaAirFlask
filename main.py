@@ -269,7 +269,7 @@ def login():
     return render_template('LogIn.html')
 
 @app.route('/bookflight-single', methods=['POST', 'GET'])
-def singlesearch():
+def singlesearch(from_city=None, to_city=None, departure_date=None):
     if request.method == 'POST':
         from_city = request.form['from_city']
         to_city = request.form['to_city']
@@ -277,7 +277,6 @@ def singlesearch():
 
     conn = dbconn()
     sql = "CALL findFlight(%s,%s,%s);"
-    #sql = 'SELECT * FROM iowa_air_gcp.flights WHERE `Departing_City` = "'+from_city+'" AND `Arriving_City` = "'+to_city+'" AND `Departure_Datetime` LIKE "' + departure_date + '%";'
 
     cursor = conn.cursor()
     try:
@@ -296,9 +295,51 @@ def singlesearch():
         return render_template('Empty.html')
 
 
+@app.route('/bookflight-roundtrip', methods=['POST', 'GET'])
+def roundsearch():
+    if request.method == 'POST':
+        from_city = request.form['from_city']
+        to_city = request.form['to_city']
+        departure_date = request.form['departure_date']
+        return_date = request.form['return_date']
+
+    sql = "CALL findFlight(%s,%s,%s);"
+    conn = dbconn()
+    cursor = conn.cursor()
+    dataQ = []
+    dataH = []
+    data = []
+
+    # try:
+    cursor.execute(sql, (from_city, to_city, departure_date))
+    rowsQ = cursor.fetchall()
+    for row in rowsQ:
+        temp = [row[0], row[1], row[2], from_city, to_city]
+        dataQ.append(list(temp))
+        data.append(list(temp))
+
+    cursor.execute(sql, (to_city, from_city, return_date))
+    rowsH = cursor.fetchall()
+    for row in rowsH:
+        temp = [row[0], row[1], row[2], to_city, from_city]
+        dataH.append(list(temp))
+        data.append(list(temp))
+
+    cursor.close()
+    conn.close()
+    return render_template("FlightsResult.html", rows=data, rowQ=dataQ, rowH=dataH)
+    #
+    # except:
+    #     return render_template('Empty.html')
+
+
 @app.route('/empty')
 def empty():
     return render_template('Empty.html')
+
+@app.route('/bookalready')
+def bookagain():
+    return render_template('BookAlready.html')
 
 
 @app.route('/bookConfirm', methods=['POST', 'GET'])
@@ -307,6 +348,9 @@ def confirm():
         first_name = get_first_name_by_id(session['idusers'])
         idusers = session['idusers']
         t_flight_id = request.form["flight_id"]
+        print(first_name)
+        print(idusers)
+        print(t_flight_id)
         return render_template("bookConfirm.html", first_name=first_name, idusers=idusers, flightid=t_flight_id)
 
     else:
@@ -322,8 +366,11 @@ def success():
     conn = dbconn()
     sql = "CALL bookflight(%s,%s);"
     cursor = conn.cursor()
-    cursor.execute(sql, (flightid, userid))
-    conn.commit()
+    try:
+        cursor.execute(sql, (flightid, userid))
+        conn.commit()
+    except:
+        return render_template('BookAlready.html')
     cursor.close()
     conn.close()
     return render_template("bookSuccess.html")
@@ -337,7 +384,7 @@ def fligtresult():
 
 @app.route('/round-result')
 def fligtresult2():
-    return render_template('FlightsResult.html')
+    return render_template('FlightsResultRound.html')
 
 
 @app.route('/addflight')
@@ -357,6 +404,7 @@ def addFlight():
         cursor.close()
         conn.close()
         return render_template('AddFlight.html', rows=data)
+
 
     except:
         return render_template('Empty.html')
@@ -505,7 +553,7 @@ def flightlink():
     sql = "SELECT * FROM flights WHERE ID=id"
     cursor.execute(sql)
     rows = cursor.fetchall()
-    data=[]
+    data = []
     for row in rows:
         temp = [row[1], row[2]]
         data.append(list(temp))
