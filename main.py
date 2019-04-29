@@ -416,7 +416,7 @@ def addCraft():
 
 
 @app.route('/bookflight-roundtrip', methods=['POST', 'GET'])
-def roundsearch():
+def roundsearch2():
     if request.method == 'POST':
         from_city = request.form['from_city']
         to_city = request.form['to_city']
