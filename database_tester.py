@@ -63,6 +63,7 @@ class TestDatabaseFunctions(unittest.TestCase):
         delete_user_by_id(id)
 
 
+
     def test_add_flight(self):
         original_count = count_flights_by_gate("O")
         id = add_flight("2019-01-01 00:00:00", "2019-01-01 00:00:00", "O")
