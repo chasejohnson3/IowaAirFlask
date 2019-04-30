@@ -449,17 +449,33 @@ def roundsearch2():
         return render_template('Empty.html')
 
 
-@app.route('/viewall')
-def viewall():
+def get_count_of_flights():
+    conn = dbconn()
+    sql = "Select * from flights;"
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return rows.__len__()
+
+
+def view_all_flights():
     conn = dbconn()
     sql = "CALL view_all_flights;"
     cursor = conn.cursor()
     cursor.execute(sql)
     rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return rows
+
+@app.route('/viewall')
+def viewall():
+    rows = view_all_flights()
     data = []
     for row in rows:
         data.append(row)
-    conn.close()
     return render_template("list.html", rows=data)
 
 
@@ -494,6 +510,16 @@ def editFlightPage():
                            aircraft_name=aircraft_name,
                            departing_city=departing_city,
                            arriving_city=arriving_city)
+
+def get_gate_by_flight_id(flight_id):
+    sql = "Select Gate from flights WHERE idflights=%s"
+    conn = dbconn()
+    cursor = conn.cursor()
+    cursor.execute(sql, flight_id)
+    rows = cursor.fetchall()
+    print(rows)
+    return rows[0][0]
+
 
 @app.route('/editFlight', methods=['POST', 'GET'])
 def editFlight():
@@ -560,7 +586,7 @@ def flightlink():
     conn.close()
     return render_template("list.html", rows=data)
 
-  
+
 @app.route('/login', methods=['POST', 'GET'])
 def login_action():
     email = request.form['email']
