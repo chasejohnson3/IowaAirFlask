@@ -69,4 +69,81 @@ class TestDatabaseFunctions(unittest.TestCase):
         result = call_find_flight(from_city, to_city, departure_date)
         self.assertTrue(result[0][0] == "9")
 
+    def test_add_flight(self):
+        original_count = count_flights_by_gate("O")
+        id = add_flight("2019-01-01 00:00:00", "2019-01-01 00:00:00", "O")
+        final_count =  count_flights_by_gate("O")
+        self.assertEqual(original_count+1, final_count)
+        delete_flight_by_id(id)
 
+    def test_get_id_by_flightid(self):
+        id = add_flight("2019-01-01 00:00:00", "2019-01-01 00:00:00", "O")
+        id2 = get_id_by_flightid(id)
+        self.assertEqual(id, id2)
+        delete_user_by_id(id)
+
+    def test_delete_flight_by_id(self):
+        id = add_flight("2019-01-01 00:00:00", "2019-01-01 00:00:00", "O")
+        self.assertEqual(id,get_id_by_flightid(id))
+        delete_flight_by_id(id)
+        self.assertEqual(None,get_id_by_flightid(id))
+
+
+    def test_add_aircraft(self):
+        id = add_aircraft("test", "O")
+        id2 = get_id_by_craftname("test")
+        self.assertEqual(id, id2)
+        print(id)
+        delete_aircraft_by_id(id)
+
+
+    def test_get_id_by_craftnamet(self):
+        id1 = get_id_by_craftname("test")
+        self.assertEqual(None, id1)
+        id = add_aircraft("test", "O")
+        id2 = get_id_by_craftname("test")
+        self.assertEqual(id, id2)
+        delete_aircraft_by_id(id)
+
+    def test_delete_aircraft_by_id(self):
+        id = add_aircraft("test", "O")
+        self.assertEqual(id, get_id_by_craftname("test"))
+        delete_aircraft_by_id(id)
+        self.assertEqual(None, get_id_by_craftname("test"))
+
+    def test_view_all_flights(self):
+        rows_length_expected = get_count_of_flights()
+        rows_length_actual = view_all_flights().__len__()
+        self.assertEqual(rows_length_expected, rows_length_actual)
+
+    def test_update_flight(self):
+        expected_gate = 'Y'
+        flight_id = add_flight("2019-01-01 00:00:00", "2019-01-01 00:12:00", expected_gate, "Big Plane", "Chicago", "New York")
+        actual_gate = get_gate_by_flight_id(flight_id)
+        conn = dbconn()
+        sql = "CALL update_flight(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
+        cursor = conn.cursor()
+        flight_id = 0
+        departure_time = "2019-01-01 00:00:00"
+        arrival_time = "2019-01-01 00:00:00"
+        gate = 'Y'
+        aircraft_name = "Big Plane"
+        departing_city = "Chicago"
+        arriving_city = "New York"
+        new_aircraft_id = get_uuid()
+        new_d_city_id = get_uuid()
+        new_a_city_id = get_uuid()
+        new_endpoints_id = get_uuid()
+        cursor.execute(sql, (flight_id,
+                             departure_time,
+                             arrival_time,
+                             gate,
+                             aircraft_name,
+                             departing_city,
+                             arriving_city,
+                             new_aircraft_id,
+                             new_d_city_id,
+                             new_a_city_id,
+                             new_endpoints_id))
+        delete_flight_by_id(flight_id)
+        self.assertEqual(expected_gate, actual_gate)

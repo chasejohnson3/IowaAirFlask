@@ -13,21 +13,6 @@ def dbconn():
     return pymysql.connect(host='35.226.87.238', port=3306, user='root', password='kfoPkgr8xKQC', db='iowa_air_gcp')
 
 
-def check_for_logged_on():
-    conn = dbconn()
-    sql = "Select Count(idusers) FROM users WHERE logged_in=1"
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    rows = cursor.fetchall()
-    print(rows[0][0])
-    if rows[0][0] > 0:
-        print("Someone is logged on")
-    else:
-        print("No one is logged on")
-
-    conn.close()
-
-
 def delete_user_by_id(id):
     conn = dbconn()
     sql = "DELETE FROM users WHERE idusers = %s"
@@ -35,6 +20,7 @@ def delete_user_by_id(id):
     cursor.execute(sql, id)
     conn.commit()
     conn.close()
+
 
 def delete_flight_by_id(id):
     conn = dbconn()
@@ -44,6 +30,13 @@ def delete_flight_by_id(id):
     conn.commit()
     conn.close()
 
+def delete_aircraft_by_id(id):
+    conn = dbconn()
+    sql = "DELETE FROM Aircraft WHERE AircraftID= %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, id)
+    conn.commit()
+    conn.close()
 
 def get_first_name_by_id(id):
     conn = dbconn()
@@ -88,6 +81,18 @@ def get_id_by_flightid(id):
     else:
         return None
 
+def get_id_by_craftname(name):
+    conn = dbconn()
+    sql = "SELECT AircraftID FROM Aircraft WHERE Name = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, name)
+    rows = cursor.fetchall()
+    conn.close()
+    if cursor.rowcount > 0:
+        return str(rows[0][0])
+    else:
+        return None
+
 
 def get_user_is_admin(id):
     conn = dbconn()
@@ -105,6 +110,8 @@ def get_user_is_admin(id):
         return None
 
 
+
+
 def count_users_by_name(first_name):
     conn = dbconn()
     sql = "SELECT COUNT(idusers) FROM users WHERE first_name = %s"
@@ -115,11 +122,20 @@ def count_users_by_name(first_name):
     return rows[0][0]
 
 
+def count_flights_by_gate(gate):
+    conn = dbconn()
+    sql = "SELECT COUNT(idflights) FROM flights WHERE Gate = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, gate)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows[0][0]
+
+
 def check_if_id_exists(id):
     conn = dbconn()
     sql = "SELECT idusers FROM users WHERE idusers = %s"
     # sql = "SELECT idusers FROM users WHERE idusers = " + str(id)
-    print(sql)
     cursor = conn.cursor()
     cursor.execute(sql, id)
     conn.close()
@@ -127,6 +143,8 @@ def check_if_id_exists(id):
         return True
     else:
         return False
+
+
 
 
 def add_user(email, first_name=None, last_name=None, password=None, is_admin=False):
@@ -151,7 +169,7 @@ def add_user(email, first_name=None, last_name=None, password=None, is_admin=Fal
 
 
 
-def add_flight( Departure_Datetime=None, Arrival_Datetime=None, Gate=None,  Aircraft=None, Departing_City=None, Arriving_City=None):
+def add_flight( Departure_Datetime="2019-01-01 00:00:00", Arrival_Datetime="2019-01-01 00:00:00", Gate=None,  Aircraft=None, Departing_City=None,  Arriving_City=None):
 
     # If a user with the given email already exists, do not allow a new email with this email to be created
     id = get_uuid()
@@ -168,6 +186,23 @@ def add_flight( Departure_Datetime=None, Arrival_Datetime=None, Gate=None,  Airc
         conn.close()
         return id
 
+
+def add_aircraft( name, capacity):
+
+    # If a user with the given email already exists, do not allow a new email with this email to be created
+    id = get_uuid()
+    if get_id_by_craftname(name) is not None:
+        return None
+    else:
+        conn = dbconn()
+        sql = "CALL add_aircraft(%s,%s,%s)"
+        cursor = conn.cursor()
+        cursor.execute(sql, (
+            id,name, capacity))
+        # session['username'] = str(id)
+        conn.commit()
+        conn.close()
+        return id
 
 
 def check_password_by_email(email, password):
@@ -208,6 +243,10 @@ def register():
 @app.route('/adduser')
 def addUser():
     return render_template('AddUser.html')
+
+# @app.route('/viewall')
+# def viewAllFlights():
+#     return render_template('list.html')
 
 @app.route('/bookflight-single')
 def bookFlightSingle():
@@ -342,21 +381,170 @@ def fligtresult2():
 
 @app.route('/addflight')
 def addFlight():
-    return render_template('AddFlight.html')
-
-@app.route('/viewall')
-def viewall():
+    if request.method == 'POST':
+        id = request.form['id']
     conn = dbconn()
-    sql = "SELECT * FROM flights"
+    cursor = conn.cursor()
+    sql = "SELECT Name FROM Aircraft;"
+    try:
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        data = []
+        for row in rows:
+            temp = [row[0]]
+            data.append(list(temp))
+        cursor.close()
+        conn.close()
+        return render_template('AddFlight.html', rows=data)
+
+
+    except:
+        return render_template('Empty.html')
+
+
+@app.route('/addcraft')
+def addCraft():
+    return render_template('AddAircraft.html')
+
+
+@app.route('/bookflight-roundtrip', methods=['POST', 'GET'])
+def roundsearch2():
+    if request.method == 'POST':
+        from_city = request.form['from_city']
+        to_city = request.form['to_city']
+        departure_date = request.form['departure_date']
+        return_date = request.form['return_date']
+
+    sql1 = "SELECT * FROM flights WHERE `Departing_City` = %s AND `Arriving_City` = %s AND `Departure_Datetime` = %s;"
+    sql2 = "SELECT * FROM flights WHERE `Departing_City` = %s AND `Arriving_City` = %s AND `Departure_Datetime` = %s;"
+    conn = dbconn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(sql1, (from_city, to_city, departure_date))
+        rows1 = cursor.fetchall()
+        data = []
+        for row in rows1:
+            temp = [row[0], row[1], row[2], row[3], row[4], row[5]]
+            data.append(list(temp))
+
+        cursor.execute(sql2, (to_city, from_city, return_date))
+        rows2 = cursor.fetchall()
+        for row in rows2:
+            temp = [row[0], row[1], row[2], row[3], row[4], row[5]]
+            data.append(list(temp))
+        cursor.close()
+        conn.close()
+        return render_template("FlightsResult.html", rows=data)
+
+    except:
+        return render_template('Empty.html')
+
+
+def get_count_of_flights():
+    conn = dbconn()
+    sql = "Select * from flights;"
     cursor = conn.cursor()
     cursor.execute(sql)
     rows = cursor.fetchall()
-    data=[]
-    for row in rows:
-        temp = [row[1], row[2]]
-        data.append(list(temp))
+    cursor.close()
     conn.close()
+    return rows.__len__()
+
+
+def view_all_flights():
+    conn = dbconn()
+    sql = "CALL view_all_flights;"
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return rows
+
+@app.route('/viewall')
+def viewall():
+    rows = view_all_flights()
+    data = []
+    for row in rows:
+        data.append(row)
     return render_template("list.html", rows=data)
+
+
+@app.route('/deleteFlight', methods=['POST', 'GET'])
+def deleteFlight():
+    delete_flight_by_id(request.form['flight_id'])
+    return render_template("deletedFlight.html")
+
+@app.route('/editFlightPage', methods=['POST', 'GET'])
+def editFlightPage():
+    flight_id=request.form['flight_id']
+    departure_datetime=request.form['departure_time']
+    arrival_datetime=request.form['arrival_time']
+    gate=request.form['gate']
+    aircraft_name=request.form['aircraft_name']
+    departing_city=request.form['departing_city']
+    arriving_city=request.form['arriving_city']
+
+    departure_date = departure_datetime.split(" ")[0]
+    departure_time = departure_datetime.split(" ")[1]
+    arrival_date = arrival_datetime.split(" ")[0]
+    arrival_time = arrival_datetime.split(" ")[1]
+
+    print("departure time is " + departure_time)
+
+    return render_template("editFlight.html", flight_id=flight_id,
+                           departure_time=departure_time,
+                           departure_date=departure_date,
+                           arrival_time=arrival_time,
+                           arrival_date=arrival_date,
+                           gate=gate,
+                           aircraft_name=aircraft_name,
+                           departing_city=departing_city,
+                           arriving_city=arriving_city)
+
+def get_gate_by_flight_id(flight_id):
+    sql = "Select Gate from flights WHERE idflights=%s"
+    conn = dbconn()
+    cursor = conn.cursor()
+    cursor.execute(sql, flight_id)
+    rows = cursor.fetchall()
+    print(rows)
+    return rows[0][0]
+
+
+@app.route('/editFlight', methods=['POST', 'GET'])
+def editFlight():
+    # for key in request.form.keys():
+    #     print(key + ": " + request.form.keys[key])
+    flight_id = request.form['flight_id']
+    departure_time = request.form['departure_date'] + " " + request.form['departure_time']
+    arrival_time = request.form['arrival_date'] + " " + request.form['arrival_time']
+    gate = request.form['gate']
+    aircraft_name = request.form['aircraft_name']
+    departing_city = request.form['departing_city']
+    arriving_city = request.form['arriving_city']
+    new_aircraft_id = get_uuid()
+    new_d_city_id = get_uuid()
+    new_a_city_id = get_uuid()
+    new_endpoints_id = get_uuid()
+    conn = dbconn()
+    sql = "CALL update_flight(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
+    cursor = conn.cursor()
+    cursor.execute(sql, (flight_id,
+                         departure_time,
+                         arrival_time,
+                         gate,
+                         aircraft_name,
+                         departing_city,
+                         arriving_city,
+                         new_aircraft_id,
+                         new_d_city_id,
+                         new_a_city_id,
+                         new_endpoints_id))
+    conn.commit()
+    return render_template("updateFlightConfirmation.html", gate=gate)
+
 
 @app.route('/flight-link', methods=['POST', 'GET'])
 def flightlink():
@@ -390,7 +578,7 @@ def flightlink():
     conn.close()
     return render_template("list.html", rows=data)
 
-  
+
 @app.route('/login', methods=['POST', 'GET'])
 def login_action():
     email = request.form['email']
@@ -439,16 +627,34 @@ def Flights():
         aircraft = request.form['aircraft']
         de = de_date+" "+ de_time+ ":00";
         ar = ar_date + " " + ar_time + ":00";
-        print(de);
 
         flightid = add_flight(de, ar,  gate, aircraft, de_city, ar_city)
         if flightid is not None:
-            msg = "Record successfully added"
+            if get_id_by_flightid(flightid)!=flightid:
+                msg = "The flight already exist"
+            else:
+                msg = "Record successfully added"
             return render_template("flights.html", result=request.form, msg=msg)
             # return render_template("users.html", result=request.form, msg=msg)
         else:
+
             return render_template("AddFlight.html", error="A flight with this id already exists")
 
+
+@app.route('/addcraft', methods=['POST', 'GET'])
+def Aircraft():
+    if request.method == 'POST':
+        # try:
+        name = request.form['name']
+        capacity = request.form['capacity']
+
+        flightid = add_aircraft(name,capacity)
+        if flightid is not None:
+            msg = "Record successfully added"
+            return render_template("addcraftsuccess.html", result=request.form, msg=msg)
+            # return render_template("users.html", result=request.form, msg=msg)
+        else:
+            return render_template("AddAircraft.html", error="A Aircraft with this id already exists")
 
 
 def get_uuid():
