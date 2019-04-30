@@ -333,6 +333,10 @@ def empty():
 def bookagain():
     return render_template('BookAlready.html')
 
+@app.route('/nomoreseat')
+def nomore():
+    return render_template('RunOutOfCapacity.html')
+
 
 @app.route('/bookConfirm', methods=['POST', 'GET'])
 def confirm():
@@ -355,10 +359,29 @@ def success():
     flightid = request.form['flight_id']
     userid = request.form['user_id'][0:-1]
 
+    check_number_sql = "SELECT COUNT(idflights) FROM iowa_air_gcp.tickets WHERE idflights = %s"
+    check_aircraftid_sql = "SELECT AircraftID FROM iowa_air_gcp.flights WHERE idflights = %s"
+    check_capacity_sql = "SELECT Capacity FROM iowa_air_gcp.Aircraft WHERE AircraftID = %s"
+
+
     conn = dbconn()
-    sql = "CALL bookflight(%s,%s);"
     cursor = conn.cursor()
+
+    cursor.execute(check_number_sql, flightid)
+    count = cursor.fetchall()[0][0]
+
+    cursor.execute(check_aircraftid_sql, flightid)
+    aircraftid = cursor.fetchall()[0][0]
+
+    cursor.execute(check_capacity_sql, aircraftid)
+    capacity = cursor.fetchall()[0][0]
+
+    if(count >= int(capacity)):
+        return render_template('RunOutOfCapacity.html')
+
+
     try:
+        sql = "CALL bookflight(%s,%s);"
         cursor.execute(sql, (flightid, userid))
         conn.commit()
     except:
