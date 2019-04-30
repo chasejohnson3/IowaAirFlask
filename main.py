@@ -509,7 +509,8 @@ def get_gate_by_flight_id(flight_id):
     cursor = conn.cursor()
     cursor.execute(sql, flight_id)
     rows = cursor.fetchall()
-    print(rows)
+    cursor.close()
+    conn.close()
     return rows[0][0]
 
 

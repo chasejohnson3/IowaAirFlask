@@ -76,11 +76,11 @@ class TestDatabaseFunctions(unittest.TestCase):
         self.assertEqual(original_count+1, final_count)
         delete_flight_by_id(id)
 
-    def test_get_id_by_flightid(self):
+    def test_get_id_by_flightid(self): # Problem
         id = add_flight("2019-01-01 00:00:00", "2019-01-01 00:00:00", "O")
         id2 = get_id_by_flightid(id)
+        delete_flight_by_id(id)
         self.assertEqual(id, id2)
-        delete_user_by_id(id)
 
     def test_delete_flight_by_id(self):
         id = add_flight("2019-01-01 00:00:00", "2019-01-01 00:00:00", "O")
@@ -118,15 +118,18 @@ class TestDatabaseFunctions(unittest.TestCase):
 
     def test_update_flight(self):
         expected_gate = 'Y'
-        flight_id = add_flight("2019-01-01 00:00:00", "2019-01-01 00:12:00", expected_gate, "Big Plane", "Chicago", "New York")
+
+        flight_id = add_flight("2019-01-01 00:00:00", "2019-01-01 00:13:00", Gate=expected_gate, Aircraft="Big Plane", Departing_City="Chicago", Arriving_City="New York")
+        print(flight_id)
         actual_gate = get_gate_by_flight_id(flight_id)
+        delete_flight_by_id(flight_id)
         conn = dbconn()
         sql = "CALL update_flight(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
         cursor = conn.cursor()
         flight_id = 0
         departure_time = "2019-01-01 00:00:00"
-        arrival_time = "2019-01-01 00:00:00"
-        gate = 'Y'
+        arrival_time = "2019-01-01 00:13:00"
+        gate = 'Z'
         aircraft_name = "Big Plane"
         departing_city = "Chicago"
         arriving_city = "New York"
@@ -145,5 +148,8 @@ class TestDatabaseFunctions(unittest.TestCase):
                              new_d_city_id,
                              new_a_city_id,
                              new_endpoints_id))
+        cursor.close()
+        conn.close()
         delete_flight_by_id(flight_id)
         self.assertEqual(expected_gate, actual_gate)
+
