@@ -268,6 +268,17 @@ def bookFlightMulti():
 def login():
     return render_template('LogIn.html')
 
+
+def call_find_flight(from_city, to_city, departure_date):
+    conn = dbconn()
+    sql = "CALL findFlight(%s,%s,%s);"
+    cursor = conn.cursor()
+    cursor.execute(sql, (from_city, to_city, departure_date))
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return rows
+
 @app.route('/bookflight-single', methods=['POST', 'GET'])
 def singlesearch(from_city=None, to_city=None, departure_date=None):
     if request.method == 'POST':
@@ -275,20 +286,12 @@ def singlesearch(from_city=None, to_city=None, departure_date=None):
         to_city = request.form['to_city']
         departure_date = request.form['departure_date']
 
-    conn = dbconn()
-    sql = "CALL findFlight(%s,%s,%s);"
-
-    cursor = conn.cursor()
     try:
-        cursor.execute(sql, (from_city, to_city, departure_date))
-        rows = cursor.fetchall()
+        rows = call_find_flight(from_city, to_city, departure_date)
         data = []
         for row in rows:
             temp = [row[0], row[1], row[2], from_city, to_city]
             data.append(list(temp))
-
-        cursor.close()
-        conn.close()
         return render_template("FlightsResult.html", rows=data, from_city_html=from_city)
 
     except:
@@ -303,34 +306,23 @@ def roundsearch():
         departure_date = request.form['departure_date']
         return_date = request.form['return_date']
 
-    sql = "CALL findFlight(%s,%s,%s);"
-    conn = dbconn()
-    cursor = conn.cursor()
-    dataQ = []
-    dataH = []
     data = []
 
-    # try:
-    cursor.execute(sql, (from_city, to_city, departure_date))
-    rowsQ = cursor.fetchall()
-    for row in rowsQ:
-        temp = [row[0], row[1], row[2], from_city, to_city]
-        dataQ.append(list(temp))
-        data.append(list(temp))
+    try:
+        rowsQ = call_find_flight(from_city, to_city, departure_date)
+        for row in rowsQ:
+            temp = [row[0], row[1], row[2], from_city, to_city]
+            data.append(list(temp))
 
-    cursor.execute(sql, (to_city, from_city, return_date))
-    rowsH = cursor.fetchall()
-    for row in rowsH:
-        temp = [row[0], row[1], row[2], to_city, from_city]
-        dataH.append(list(temp))
-        data.append(list(temp))
+        rowsH = call_find_flight(to_city, from_city, return_date)
+        for row in rowsH:
+            temp = [row[0], row[1], row[2], to_city, from_city]
+            data.append(list(temp))
 
-    cursor.close()
-    conn.close()
-    return render_template("FlightsResult.html", rows=data, rowQ=dataQ, rowH=dataH)
-    #
-    # except:
-    #     return render_template('Empty.html')
+        return render_template("FlightsResult.html", rows=data)
+
+    except:
+        return render_template('Empty.html')
 
 
 @app.route('/empty')

@@ -62,7 +62,12 @@ class TestDatabaseFunctions(unittest.TestCase):
         self.assertTrue(get_user_is_admin(id))
         delete_user_by_id(id)
 
-
+    def test_single_search(self):
+        from_city = "New York City"
+        to_city = "Chicago"
+        departure_date = "2019-06-20"
+        result = call_find_flight(from_city, to_city, departure_date)
+        self.assertTrue(result[0][0] == "9")
 
     def test_add_flight(self):
         original_count = count_flights_by_gate("O")
